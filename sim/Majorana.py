@@ -8,7 +8,7 @@ class MajoranaOp:
         self.b = b
     def rb(self):
         w = sum(self.b)
-        if(w % 4 == 0 or (w-1) % 4 ==0):
+        if(w % 4 == 0 or w % 4 == 1):
             return 0
         else:
             return 1
@@ -20,9 +20,12 @@ def MajoranaPrg(Min, theta_ex, b_ex):
     
     for i in range(cons_len):
         if(b_ex[i]==1):
-            shade = [0] * i + [1] * (Min.N - i)
+            shade = [0] * (i + 1) + [1] * (Min.N - i - 1)
             neg_cnt += np.inner(Min.b, shade)
     
+    sign = 1
+    if(neg_cnt % 2 == 1):
+        sign = -1
 
     if(len(b_ex) < Min.N):
         long_arr = Min.b
@@ -40,9 +43,7 @@ def MajoranaPrg(Min, theta_ex, b_ex):
     bsum = short_padded + long_arr
     bout = [x % 2 for x in bsum]
 
-    sign = 1
-    if(neg_cnt % 2 == 1):
-        sign = -1
+    
     
     imag = Min.rb() + MajoranaOp(len(b_ex), b_ex).rb() + 1
 
