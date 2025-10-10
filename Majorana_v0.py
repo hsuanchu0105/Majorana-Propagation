@@ -15,18 +15,29 @@ class MajoranaOp:
 
 #Majorana Propagation 
 def MajoranaPrg(Min, theta_ex, b_ex):
-    w = sum(Min.b)              # 1 norm 
-    w_ex = sum(b_ex)
-    neg_cnt = 0                 #shuffle count 
-    cons_len = len(b_ex)        #considered length
-    if(len(b_ex) > Min.N):
-        cons_len = Min.N
+    neg_cnt = 0                             #negative sign from anti-commutivity 
+    cons_len = min(len(b_ex), Min.N)        #considered length
+    
     for i in range(cons_len):
         if(b_ex[i]==1):
-            shade = [0] * b_ex[i] + [1] * (Min.N - b_ex[i])
+            shade = [0] * i + [1] * (Min.N - i)
             neg_cnt += np.inner(Min.b, shade)
     
-    bsum = np.add(Min.b,b_ex)
+
+    if(len(b_ex) < Min.N):
+        long_arr = Min.b
+        short_arr = b_ex
+    else:
+        long_arr = b_ex
+        short_arr = Min.b
+
+    short_padded = np.zeros_like(long_arr)
+
+    # Copy the elements of the smaller array into the padded array
+    short_padded[:short_arr.shape[0]] = short_arr
+
+    # Add the two arrays of the same size
+    bsum = short_padded + long_arr
     bout = [x % 2 for x in bsum]
 
     sign = 1
@@ -40,10 +51,12 @@ def MajoranaPrg(Min, theta_ex, b_ex):
 
     return c1,  c2 , bout 
 
-b0 = [1, 1, 0, 1, 1, 0, 0, 0, 1, 0]
-M0 = MajoranaOp(10, b0)
-theta1 = 0.3
-b1 = [0, 0, 0, 1, 0, 0, 0, 0, 1, 1]
+b0 = np.array([1, 1, 0, 1, 1, 0, 0, 0, 1, 0])
+#b0 = np.array([1, 1])
+M0 = MajoranaOp(len(b0), b0)
+theta1 = cmath.pi/3
+b1 = np.array([0, 0, 0, 1, 0, 0, 0, 0])
+#b1 = np.array([1])
 coeff1, coeff2, bnew = MajoranaPrg(M0, theta1, b1)
 
 print(coeff1, coeff2, bnew)
