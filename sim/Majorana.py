@@ -1,8 +1,10 @@
 import cmath 
 import numpy as np
 
-class MajoranaOp:
-    
+"""
+Majorana Operator
+"""
+class MajoranaOp:   
     def __init__(self, N, b):
         self.N = N              # 2N in paper
         self.b = b
@@ -13,8 +15,10 @@ class MajoranaOp:
         else:
             return 1
 
-#Majorana Propagation 
-def MajoranaPrg(Min, theta_ex, b_ex):
+"""
+Majorana Propagation (1 Fermionic gate)
+"""
+def M1Prg(Min, theta_ex, b_ex):
     neg_cnt = 0                             #negative sign from anti-commutivity 
     cons_len = min(len(b_ex), Min.N)        #considered length
     
@@ -23,7 +27,6 @@ def MajoranaPrg(Min, theta_ex, b_ex):
             shade = [0] * (i + 1) + [1] * (Min.N - i - 1)
             neg_cnt += np.inner(Min.b, shade)
     
-    sign = 1
     if(neg_cnt % 2 == 1):
         sign = -1
 
@@ -39,6 +42,7 @@ def MajoranaPrg(Min, theta_ex, b_ex):
     # Copy the elements of the smaller array into the padded array
     short_padded[:short_arr.shape[0]] = short_arr
 
+    
     # Add the two arrays of the same size
     bsum = short_padded + long_arr
     bout = [x % 2 for x in bsum]
@@ -52,13 +56,8 @@ def MajoranaPrg(Min, theta_ex, b_ex):
 
     return c1,  c2 , bout 
 
-b0 = np.array([1, 1, 0, 1, 1, 0, 0, 0, 1, 0])
-#b0 = np.array([1, 1])
-M0 = MajoranaOp(len(b0), b0)
-theta1 = cmath.pi/3
-b1 = np.array([0, 0, 0, 1, 0, 0, 0, 0])
-#b1 = np.array([1])
-coeff1, coeff2, bnew = MajoranaPrg(M0, theta1, b1)
 
-print(coeff1, coeff2, bnew)
-
+class MajoranaPropagation:
+    length_trunc = 4
+    coeff_thres = 1e-4
+    
