@@ -1,13 +1,19 @@
 import cmath 
 import numpy as np
 
+
+class Node:
+    def __init__(self, bin, coeff = 1):
+        self.b = bin
+        self.c = coeff
+        
 """
 Majorana Operator
 """
-class MajoranaOp:   
-    def __init__(self, N, b):
+class MajoranaOp(Node):   
+    def __init__(self, N, b, c = 1):
+        Node.__init__(self, b, c)
         self.N = N              # 2N in paper
-        self.b = b
     def rb(self):
         w = sum(self.b)
         if(w % 4 == 0 or w % 4 == 1):
@@ -15,6 +21,8 @@ class MajoranaOp:
         else:
             return 1
 
+
+        
 """
 Majorana Propagation (1 Fermionic gate)
 """
@@ -56,8 +64,59 @@ def M1Prg(Min, theta_ex, b_ex):
 
     return c1,  c2 , bout 
 
+class LinkedList:
+    def __init__(self):
+        self.head = None
+    def insertNodeAtPosition(self, newNode, position):
+        if position == 1:
+            newNode.next = self.head
+            self.head =  newNode
+        
+        currentNode = self.head
+        for _ in range(position - 2):
+            if currentNode is None:
+                break
+            currentNode = currentNode.next
+
+        newNode.next = currentNode.next
+        currentNode.next = newNode
+        
+    def deleteSpecificNode(self, nodeToDelete):
+        if self.head == nodeToDelete:
+            self.head = None
+
+        currentNode = self.head
+        while currentNode.next and currentNode.next != nodeToDelete:
+            currentNode = currentNode.next
+
+        if currentNode.next is None:
+            currentNode = None
+        else:
+            currentNode.next = currentNode.next.next
+
+        
 
 class MajoranaPropagation:
     length_trunc = 4
     coeff_thres = 1e-4
+    L = 3
+    N1 = Node(np.array([1, 1]))
+    N2 = Node(np.array([1, 0, 1, 0]))
+    PpgList = LinkedList()
+    PpgList.insertNodeAtPosition(N1, 1)
     
+    theta1 = cmath.pi/3
+    theta2 = cmath.pi/4
+    theta3 = cmath.pi/6
+    b1 = np.array([1, 0, 0, 1, 1, 1])
+    b2 = np.array([0, 0, 1, 1])
+    b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1,1 ,0])
+    U = [[theta1, b1], [theta2, b2], [theta3, b3]]
+
+    
+    lv_st = 1
+    lv_end = 2
+    for i in range(L):
+        M1Prg()
+
+
