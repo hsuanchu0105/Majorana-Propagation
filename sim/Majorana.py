@@ -71,32 +71,39 @@ class LinkedList:
         if position == 1:
             newNode.next = self.head
             self.head =  newNode
-        
-        currentNode = self.head
-        for _ in range(position - 2):
-            if currentNode is None:
-                break
-            currentNode = currentNode.next
+        elif position > 1:    
+            currentNode = self.head
+            for _ in range(position - 2):
+                if currentNode is None:
+                    break
+                currentNode = currentNode.next
 
-        newNode.next = currentNode.next
-        currentNode.next = newNode
+            newNode.next = currentNode.next
+            currentNode.next = newNode
         
     def deleteSpecificNode(self, nodeToDelete):
         if self.head == nodeToDelete:
-            self.head = None
+            self.head = self.head.next
 
-        currentNode = self.head
-        while currentNode.next and currentNode.next != nodeToDelete:
-            currentNode = currentNode.next
-
-        if currentNode.next is None:
-            currentNode = None
         else:
-            currentNode.next = currentNode.next.next
+            currentNode = self.head
+            while currentNode.next and currentNode.next != nodeToDelete:
+                currentNode = currentNode.next
 
+            if currentNode.next is None:
+                currentNode = None
+            else:
+                currentNode.next = currentNode.next.next
+
+    def traverseAndPrint(self):
+        currentNode = self.head
+        while currentNode:
+            print(currentNode.b, end=" -> ")
+            currentNode = currentNode.next
+        print("null")
         
 
-class MajoranaPropagation:
+def MajoranaPropagation():
     length_trunc = 4
     coeff_thres = 1e-4
     L = 3
@@ -104,6 +111,8 @@ class MajoranaPropagation:
     N2 = Node(np.array([1, 0, 1, 0]))
     PpgList = LinkedList()
     PpgList.insertNodeAtPosition(N1, 1)
+    PpgList.insertNodeAtPosition(N2, 2)
+    PpgList.deleteSpecificNode(N2)
     
     theta1 = cmath.pi/3
     theta2 = cmath.pi/4
@@ -113,10 +122,13 @@ class MajoranaPropagation:
     b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1,1 ,0])
     U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 
-    
+    PpgList.traverseAndPrint()
+
+
     lv_st = 1
     lv_end = 2
-    for i in range(L):
-        M1Prg()
+    #for i in range(L):
+     #   M1Prg()
 
 
+MajoranaPropagation()
