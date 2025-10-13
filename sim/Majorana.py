@@ -6,13 +6,14 @@ class Node:
     def __init__(self, bin, coeff = 1):
         self.b = bin
         self.c = coeff
-        
+        self.rb = 0
 """
 Majorana Operator
 """
-class MajoranaOp(Node):   
+class MajoranaOp:   
     def __init__(self, N, b, c = 1):
-        Node.__init__(self, b, c)
+        self.b = b 
+        self.c = c
         self.N = N              # 2N in paper
     def rb(self):
         w = sum(self.b)
@@ -26,24 +27,25 @@ class MajoranaOp(Node):
 """
 Majorana Propagation (1 Fermionic gate)
 """
-def M1Prg(Min, theta_ex, b_ex):
+def M1Prg(Nin, theta_ex, b_ex):
     neg_cnt = 0                             #negative sign from anti-commutivity 
-    cons_len = min(len(b_ex), Min.N)        #considered length
+    cons_len = min(len(b_ex), len(Nin.b))        #considered length
     
     for i in range(cons_len):
         if(b_ex[i]==1):
-            shade = [0] * (i + 1) + [1] * (Min.N - i - 1)
-            neg_cnt += np.inner(Min.b, shade)
+            shade = [0] * (i + 1) + [1] * (len(Nin.b) - i - 1)
+            neg_cnt += np.inner(Nin.b, shade)
     
+    sign = 1
     if(neg_cnt % 2 == 1):
         sign = -1
 
-    if(len(b_ex) < Min.N):
-        long_arr = Min.b
+    if(len(b_ex) < len(Nin.b)):
+        long_arr = Nin.b
         short_arr = b_ex
     else:
         long_arr = b_ex
-        short_arr = Min.b
+        short_arr = Nin.b
 
     short_padded = np.zeros_like(long_arr)
 
@@ -53,25 +55,26 @@ def M1Prg(Min, theta_ex, b_ex):
     
     # Add the two arrays of the same size
     bsum = short_padded + long_arr
-    bout = [x % 2 for x in bsum]
+    bout = np.array([x % 2 for x in bsum])
 
     
     
-    imag = Min.rb() + MajoranaOp(len(b_ex), b_ex).rb() + 1
+    imag = MajoranaOp(len(b_ex), b_ex).rb() + 1
 
-    c1 = cmath.cos(theta_ex)
-    c2 = cmath.sin(theta_ex) *  (1j ** imag) * sign 
+    c1 = Nin.c * cmath.cos(theta_ex)
+    c2 = Nin.c * cmath.sin(theta_ex) *  (1j ** imag) * sign 
 
     return c1,  c2 , bout 
 
 class LinkedList:
     def __init__(self):
         self.head = None
+        self.len = 0
     def insertNodeAtPosition(self, newNode, position):
-        if position == 1:
+        if position == 0:
             newNode.next = self.head
             self.head =  newNode
-        elif position > 1:    
+        elif position > 0:    
             currentNode = self.head
             for _ in range(position - 2):
                 if currentNode is None:
@@ -80,7 +83,7 @@ class LinkedList:
 
             newNode.next = currentNode.next
             currentNode.next = newNode
-        
+        self.len +=1 
     def deleteSpecificNode(self, nodeToDelete):
         if self.head == nodeToDelete:
             self.head = self.head.next
@@ -94,14 +97,21 @@ class LinkedList:
                 currentNode = None
             else:
                 currentNode.next = currentNode.next.next
-
+        self.len -= 1
     def traverseAndPrint(self):
         currentNode = self.head
         while currentNode:
-            print(currentNode.b, end=" -> ")
+            print(currentNode.b, ",", currentNode.c, end=" -> ")
             currentNode = currentNode.next
         print("null")
-        
+    def __getitem__(self, position):
+        if(position ==0):
+            return self.head
+        else:
+            currentNode = self.head
+            for i in range(position, 0, -1):
+                currentNode = currentNode.next
+            return currentNode
 
 def MajoranaPropagation():
     length_trunc = 4
@@ -110,25 +120,49 @@ def MajoranaPropagation():
     N1 = Node(np.array([1, 1]))
     N2 = Node(np.array([1, 0, 1, 0]))
     PpgList = LinkedList()
-    PpgList.insertNodeAtPosition(N1, 1)
-    PpgList.insertNodeAtPosition(N2, 2)
-    PpgList.deleteSpecificNode(N2)
+    PpgList.insertNodeAtPosition(N1, 0)
+    PpgList.insertNodeAtPosition(N2, 1)
+    
     
     theta1 = cmath.pi/3
     theta2 = cmath.pi/4
     theta3 = cmath.pi/6
     b1 = np.array([1, 0, 0, 1, 1, 1])
     b2 = np.array([0, 0, 1, 1])
-    b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1,1 ,0])
+    b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1, 1 , 0])
     U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 
-    PpgList.traverseAndPrint()
+    #PpgList.traverseAndPrint()
 
 
-    lv_st = 1
-    lv_end = 2
-    #for i in range(L):
-     #   M1Prg()
+    lv_st = 0               #start of current level 
+    lv_end = 1
+    current_pos = 1
+    for i in range(L):
+        for j in range(lv_st, lv_end + 1):
+            if(len(PpgList[j].b) < len(U[i][1])):
+                long_arr = U[i][1]
+                short_arr = PpgList[j].b
+            else:
+                long_arr = PpgList[j].b
+                short_arr = U[i][1]
+
+            short_padded = np.zeros_like(long_arr)
+            short_padded[:short_arr.shape[0]] = short_arr
+
+            if(np.inner(short_padded, long_arr) % 2 == 0):
+                PpgList.insertNodeAtPosition(Node(PpgList[j].b, coeff1), current_pos + 2)
+                current_pos += 1
+            else:
+                coeff1, coeff2, bnew = M1Prg(PpgList[j], U[i][0], U[i][1])
+                #print(PpgList[j].b)
+                PpgList.insertNodeAtPosition(Node(PpgList[j].b, coeff1), current_pos + 2)
+                PpgList.insertNodeAtPosition(Node(bnew, coeff2), current_pos + 3)
+                current_pos += 2
+        PpgList.traverseAndPrint()
+        print("length = ", PpgList.len)
+        lv_st = lv_end + 1
+        lv_end = current_pos
 
 
 MajoranaPropagation()
