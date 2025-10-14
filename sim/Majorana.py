@@ -3,9 +3,9 @@ import numpy as np
 
 
 class Node:
-    def __init__(self, bin, coeff = 1):
-        self.b = bin
-        self.c = coeff
+    def __init__(self, b, c = 1):
+        self.b = b
+        self.c = c
         self.rb = 0
 """
 Majorana Operator
@@ -63,6 +63,7 @@ def M1Prg(Nin, theta_ex, b_ex):
 
     c1 = Nin.c * cmath.cos(theta_ex)
     c2 = Nin.c * cmath.sin(theta_ex) *  (1j ** imag) * sign 
+    #print(c2)
 
     return c1,  c2 , bout 
 
@@ -76,7 +77,7 @@ class LinkedList:
             self.head =  newNode
         elif position > 0:    
             currentNode = self.head
-            for _ in range(position - 2):
+            for _ in range(position - 1):
                 if currentNode is None:
                     break
                 currentNode = currentNode.next
@@ -101,7 +102,7 @@ class LinkedList:
     def traverseAndPrint(self):
         currentNode = self.head
         while currentNode:
-            print(currentNode.b, ",", currentNode.c, end=" -> ")
+            print( currentNode.b, ",", f"{currentNode.c.real:.3f}{currentNode.c.imag:+.3f}j", end=" -> ")
             currentNode = currentNode.next
         print("null")
     def __getitem__(self, position):
@@ -125,14 +126,13 @@ def MajoranaPropagation():
     
     
     theta1 = cmath.pi/3
-    theta2 = cmath.pi/4
+    theta2 = cmath.pi/3
     theta3 = cmath.pi/6
     b1 = np.array([1, 0, 0, 1, 1, 1])
     b2 = np.array([0, 0, 1, 1])
     b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1, 1 , 0])
     U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 
-    #PpgList.traverseAndPrint()
 
 
     lv_st = 0               #start of current level 
@@ -151,13 +151,17 @@ def MajoranaPropagation():
             short_padded[:short_arr.shape[0]] = short_arr
 
             if(np.inner(short_padded, long_arr) % 2 == 0):
-                PpgList.insertNodeAtPosition(Node(PpgList[j].b, coeff1), current_pos + 2)
+                N = Node(PpgList[j].b, PpgList[j].c)
+                PpgList.insertNodeAtPosition(N, current_pos + 1)
                 current_pos += 1
             else:
                 coeff1, coeff2, bnew = M1Prg(PpgList[j], U[i][0], U[i][1])
+                #print(coeff2)
                 #print(PpgList[j].b)
-                PpgList.insertNodeAtPosition(Node(PpgList[j].b, coeff1), current_pos + 2)
-                PpgList.insertNodeAtPosition(Node(bnew, coeff2), current_pos + 3)
+                Nl = Node(PpgList[j].b, coeff1)
+                Nr = Node(bnew, coeff2)
+                PpgList.insertNodeAtPosition(Nl, current_pos + 1)
+                PpgList.insertNodeAtPosition(Nr, current_pos + 2)
                 current_pos += 2
         PpgList.traverseAndPrint()
         print("length = ", PpgList.len)

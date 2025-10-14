@@ -27,7 +27,7 @@ class TestMajorana(unittest.TestCase):
         self.assertTrue(np.allclose(coeff1, cmath.cos(theta1)), msg="coeff1 does not match reference")
         self.assertTrue(np.allclose(coeff2, cmath.sin(theta1)), msg="coeff2 does not match reference")
         self.assertTrue(np.allclose(bnew, [0, 0, 0, 0, 1, 0, 1, 0]), msg="binary does not match reference")
-
+    
 
 if __name__ == '__main__':
     unittest.main()
