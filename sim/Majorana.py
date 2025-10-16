@@ -1,14 +1,16 @@
 import cmath 
 import numpy as np
 
-
+"""
+Node used for Majorana Propagation. Each node contains one binary representation and coefficient (default as 1)
+"""
 class Node:
     def __init__(self, b, c = 1):
         self.b = b
         self.c = c
         self.rb = 0
 """
-Majorana Operator
+Majorana Operator 
 """
 class MajoranaOp:   
     def __init__(self, N, b):
@@ -24,12 +26,13 @@ class MajoranaOp:
 
         
 """
-Majorana Propagation (1 Fermionic gate)
+Majorana Propagation for 1 Fermionic gate
 """
 def M1Prg(Nin, theta_ex, b_ex):
     neg_cnt = 0                             #negative sign from anti-commutivity 
     cons_len = min(len(b_ex), len(Nin.b))        #considered length
     
+    #sign added by multiplication of two Majorana operators (nodes)
     for i in range(cons_len):
         if(Nin.b[i]==1):
             shade = [0] * (i + 1) + [1] * (len(b_ex) - i - 1)
@@ -39,6 +42,7 @@ def M1Prg(Nin, theta_ex, b_ex):
     if(neg_cnt % 2 == 1):
         sign = -1
 
+    # put two binaries into same length 
     if(len(b_ex) < len(Nin.b)):
         long_arr = Nin.b
         short_arr = b_ex
@@ -47,16 +51,12 @@ def M1Prg(Nin, theta_ex, b_ex):
         short_arr = Nin.b
 
     short_padded = np.zeros_like(long_arr)
-
-    # Copy the elements of the smaller array into the padded array
     short_padded[:short_arr.shape[0]] = short_arr
 
     
     bsum = short_padded + long_arr
     bout = np.array([x % 2 for x in bsum])
 
-    
-    
     imag = MajoranaOp(len(b_ex), b_ex).rb() + 1
 
     c1 = Nin.c * cmath.cos(theta_ex)
@@ -65,6 +65,9 @@ def M1Prg(Nin, theta_ex, b_ex):
 
     return c1,  c2 , bout 
 
+"""
+LinkedList for recording Majorana Propagation 
+"""
 class LinkedList:
     def __init__(self):
         self.head = None
@@ -119,11 +122,17 @@ class LinkedList:
             for i in range(position, 0, -1):
                 currentNode = currentNode.next
             return currentNode
-
+        
+"""
+Main function of Majorana Propagation 
+"""
 def MajoranaPropagation():
+
+    #parameters for truncation
     length_trunc = 4
     coeff_thres = 1e-4
-    L = 3
+
+    # initial Majorana operator
     b1 = np.array([1, 1])
     M1 = MajoranaOp(2, b1)
     N1 = Node(b1, 1j**M1.rb())
@@ -134,7 +143,8 @@ def MajoranaPropagation():
     PpgList.insertNodeAtPosition(N1, 0)
     PpgList.insertNodeAtPosition(N2, 1)
     
-    
+    #parameters of Fermionic gate U
+    L = 3                   #length 
     theta1 = cmath.pi/3
     theta2 = cmath.pi/6
     theta3 = cmath.pi/3
@@ -144,13 +154,13 @@ def MajoranaPropagation():
     U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 
 
-
     lv_st = 0               #start of current level 
-    lv_end = 1
+    lv_end = 1              #end 
     current_pos = 1
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
     PpgList.PrintFrom(lv_st, lv_end)
+
     for i in range(L):
         for j in range(lv_st, lv_end + 1):
             if(len(PpgList[j].b) < len(U[i][1])):
@@ -163,7 +173,7 @@ def MajoranaPropagation():
             short_padded = np.zeros_like(long_arr)
             short_padded[:short_arr.shape[0]] = short_arr
 
-            if(np.inner(short_padded, long_arr) % 2 == 0):
+            if(np.inner(short_padded, long_arr) % 2 == 0): #if M_b and M_{b_j} commute
                 #pass
                 N = Node(PpgList[j].b, PpgList[j].c)
                 PpgList.insertNodeAtPosition(N, current_pos + 1)
@@ -172,10 +182,10 @@ def MajoranaPropagation():
                 coeff1, coeff2, bnew = M1Prg(PpgList[j], U[i][0], U[i][1])
                 #print(coeff2)
                 #print(PpgList[j].b)
-                Nl = Node(PpgList[j].b, coeff1)
+                Nl = Node(PpgList[j].b, coeff1) 
                 Nr = Node(bnew, coeff2)
                 PpgList.insertNodeAtPosition(Nl, current_pos + 1)
-                if(sum(bnew) <= length_trunc and np.abs(coeff2) > coeff_thres):
+                if(sum(bnew) <= length_trunc and np.abs(coeff2) > coeff_thres): #length truncation and coefficient truncation 
                     PpgList.insertNodeAtPosition(Nr, current_pos + 2)
                     current_pos += 1
                 current_pos += 1
