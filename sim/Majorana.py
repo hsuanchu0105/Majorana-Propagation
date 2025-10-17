@@ -199,9 +199,9 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
             Paircnt = PpgList[i].IsPaired()
             print("Paired nodes = ", PpgList[i].b)
             print("number of pairs = ", Paircnt)
-            Expect += (1j**Paircnt) * PpgList[i].c 
+            Expect += (1j**Paircnt) * PpgList[i].c  #does not depend on initial state? 
 
-    print("Expectation value calculated by Majorana Propagation = ", Expect)      
+    print("Expectation value by Majorana Propagation = ", Expect)      
 
 
 
@@ -222,3 +222,37 @@ b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1, 1 , 0])
 
 U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 MajoranaPropagation(trunc_param, Init_Node, 3, U)
+
+U = [[theta1, b1]]
+MajoranaPropagation(trunc_param, Init_Node, 1, U)
+
+#direct calculation 
+theta = cmath.pi/3
+X = np.array([[0, 1], [1, 0]])
+Y = 1j * np.array([[0, -1], [1, 0]])
+Z = np.array([[1, 0], [0, -1]])
+I = np.eye(2)
+
+m1 = np.kron(np.kron(X, I), I)
+m2 = np.kron(np.kron(Y, I), I)
+m3 = np.kron(np.kron(Z, X), I)
+m4 = np.kron(np.kron(Z, Y), I)
+m5 = np.kron(np.kron(Z, Z), X)
+m6 = np.kron(np.kron(Z, Z), Y)
+
+Mb = 1j * m1 @ m2
+Mc = 1j * m1 @ m3
+Mbj = m1 @ m4 @ m5 @ m6
+
+print("Mb = ", Mb)
+print("Mc = ", Mc)
+print("Mbj = ", Mbj)
+
+rho = np.reshape(np.eye(8)[0], (8, 1))
+rhoT = np.transpose(rho)
+
+print(rho @ rhoT)
+
+Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
+
+print("Expectation value by direct calculation = ", Expect_dir)
