@@ -135,36 +135,23 @@ class LinkedList:
 """
 Main function of Majorana Propagation 
 """
-def MajoranaPropagation():
+def MajoranaPropagation(trunc, Nin, lenU, U):
 
     #parameters for truncation
-    length_trunc = 4
-    coeff_thres = 1e-4
+    length_trunc = trunc[0]
+    coeff_thres = trunc[1]
 
     # initial Majorana operator
-    b1 = np.array([1, 1])
-    M1 = MajoranaOp(2, b1)
-    N1 = Node(b1, 1j**M1.rb())
-    b2 = np.array([1, 0, 1, 0])
-    M2 = MajoranaOp(4, b2)
-    N2 = Node(b2, 1j**M2.rb())
     PpgList = LinkedList()
-    PpgList.insertNodeAtPosition(N1, 0)
-    PpgList.insertNodeAtPosition(N2, 1)
+    for i in range(len(Nin)):
+        PpgList.insertNodeAtPosition(Nin[i], i)
     
     #parameters of Fermionic circuit U
-    L = 3                   #length of U
-    theta1 = cmath.pi/3
-    theta2 = cmath.pi/6
-    theta3 = cmath.pi/3
-    b1 = np.array([1, 0, 0, 1, 1, 1])
-    b2 = np.array([0, 0, 1, 1])
-    b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1, 1 , 0])
-    U = [[theta1, b1], [theta2, b2], [theta3, b3]]
-
-
+    L = lenU                   #length of U
+    
+    
     lv_st = 0               #start of current level 
-    lv_end = 1              #end 
+    lv_end = 1              #end of current level 
     current_pos = 1
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
@@ -216,4 +203,22 @@ def MajoranaPropagation():
 
     print("Expectation value calculated by Majorana Propagation = ", Expect)      
 
-MajoranaPropagation()
+
+
+trunc_param = np.array([4, 1e-4])
+b1 = np.array([1, 1])
+M1 = MajoranaOp(2, b1)
+N1 = Node(b1, 1j**M1.rb())
+b2 = np.array([1, 0, 1, 0])
+M2 = MajoranaOp(4, b2)
+N2 = Node(b2, 1j**M2.rb())
+Init_Node = [N1, N2]
+theta1 = cmath.pi/3
+theta2 = cmath.pi/6
+theta3 = cmath.pi/3
+b1 = np.array([1, 0, 0, 1, 1, 1])
+b2 = np.array([0, 0, 1, 1])
+b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1, 1 , 0])
+
+U = [[theta1, b1], [theta2, b2], [theta3, b3]]
+MajoranaPropagation(trunc_param, Init_Node, 3, U)
