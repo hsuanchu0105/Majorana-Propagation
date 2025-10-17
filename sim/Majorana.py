@@ -12,13 +12,18 @@ class Node:
         self.N = len(b)
     #return 0 if is not paired, else return number of pairs
     def IsPaired(self):
-        Pair = 0
+        Pair = []
         for i in range(0, self.N, 2):
-            if (self.b[i] + self.b[i+1]) == 1:
-                return 0
-            elif(self.b[i] + self.b[i+1]) == 2:
-                Pair += 1
-        return Pair
+            s = self.b[i] + self.b[i+1]
+            if s == 1:
+                Pair.append(-1)
+                return np.array(Pair)
+            elif s == 2:
+                Pair.append(1)
+            else:
+                Pair.append(0)
+        #print("Pair in the function", Pair)
+        return np.array(Pair)
 """
 Majorana Operator 
 """
@@ -135,7 +140,7 @@ class LinkedList:
 """
 Main function of Majorana Propagation 
 """
-def MajoranaPropagation(trunc, Nin, lenU, U):
+def MajoranaPropagation(trunc, Nin, lenU, U, rho):
 
     #parameters for truncation
     length_trunc = trunc[0]
@@ -153,9 +158,11 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     lv_st = 0               #start of current level 
     lv_end = 1              #end of current level 
     current_pos = 1
+    '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
     PpgList.PrintFrom(lv_st, lv_end)
+    '''
 
     for i in range(L):
         for j in range(lv_st, lv_end + 1):
@@ -189,17 +196,26 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
         #print("length = ", PpgList.len)
         lv_st = lv_end + 1
         lv_end = current_pos
+        '''
         print("Level", i+1, ":")
         PpgList.PrintFrom(lv_st, lv_end)
+        '''
 
     #compute expectation value
     Expect = 0
     for i in range(lv_st, lv_end + 1):
-        if(PpgList[i].IsPaired()):
-            Paircnt = PpgList[i].IsPaired()
-            print("Paired nodes = ", PpgList[i].b)
-            print("number of pairs = ", Paircnt)
-            Expect += (1j**Paircnt) * PpgList[i].c  #does not depend on initial state? 
+        Pair = PpgList[i].IsPaired()
+        #print(len(Pair))
+        #print(len(rho))
+        
+        #Pair = np.reshape(Pair, (1, len(Pair)))
+        if(Pair[-1] != -1):
+            while(len(Pair) < len(rho)):
+                Pair = np.append(Pair, 0)
+            #print("Paired nodes = ", PpgList[i].b)
+            #print("Pairs = ", Pair)
+            PairedOne = np.inner(Pair, rho)
+            Expect += ((-1)**PairedOne) * (1j**sum(Pair))* PpgList[i].c  
 
     print("Expectation value by Majorana Propagation = ", Expect)      
 
@@ -220,11 +236,25 @@ b1 = np.array([1, 0, 0, 1, 1, 1])
 b2 = np.array([0, 0, 1, 1])
 b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1, 1 , 0])
 
-U = [[theta1, b1], [theta2, b2], [theta3, b3]]
-MajoranaPropagation(trunc_param, Init_Node, 3, U)
-
+#U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 U = [[theta1, b1]]
-MajoranaPropagation(trunc_param, Init_Node, 1, U)
+
+rho_st = np.array([0, 0, 0])
+c = np.array([0, 0, 0])
+for i in range(8):
+    c[0] = i/4
+    r1 = i - c[0] * 4
+    c[1] = r1/2
+    r2 = r1 - c[1] * 2
+    c[2] = r2
+    
+    for j in range(3):
+        rho_st[j] = c[j]
+    print("input fock state = ", rho_st)
+    MajoranaPropagation(trunc_param, Init_Node, 1, U, rho_st)
+#MajoranaPropagation(trunc_param, Init_Node, 3, U, rho_st)
+
+
 
 #direct calculation 
 theta = cmath.pi/3
@@ -244,15 +274,16 @@ Mb = 1j * m1 @ m2
 Mc = 1j * m1 @ m3
 Mbj = m1 @ m4 @ m5 @ m6
 
-print("Mb = ", Mb)
-print("Mc = ", Mc)
-print("Mbj = ", Mbj)
+#print("Mb = ", Mb)
+#print("Mc = ", Mc)
+#print("Mbj = ", Mbj)
 
-rho = np.reshape(np.eye(8)[0], (8, 1))
-rhoT = np.transpose(rho)
+for i in range(8):
+    test = np.eye(8)[i]
+    rho = np.reshape(test, (8, 1))
+    rhoT = np.transpose(rho)
+    #print(rho @ rhoT)
 
-print(rho @ rhoT)
+    Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
 
-Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
-
-print("Expectation value by direct calculation = ", Expect_dir)
+    print("Expectation value by direct calculation = ", Expect_dir)
