@@ -9,6 +9,16 @@ class Node:
         self.b = b
         self.c = c
         self.rb = 0
+        self.N = len(b)
+    #return 0 if is not paired, else return number of pairs
+    def IsPaired(self):
+        Pair = 0
+        for i in range(0, self.N, 2):
+            if (self.b[i] + self.b[i+1]) == 1:
+                return 0
+            elif(self.b[i] + self.b[i+1]) == 2:
+                Pair += 1
+        return Pair
 """
 Majorana Operator 
 """
@@ -22,8 +32,7 @@ class MajoranaOp:
             return 0
         else:
             return 1
-
-
+    
         
 """
 Majorana Propagation for 1 Fermionic gate
@@ -122,7 +131,7 @@ class LinkedList:
             for i in range(position, 0, -1):
                 currentNode = currentNode.next
             return currentNode
-        
+      
 """
 Main function of Majorana Propagation 
 """
@@ -143,8 +152,8 @@ def MajoranaPropagation():
     PpgList.insertNodeAtPosition(N1, 0)
     PpgList.insertNodeAtPosition(N2, 1)
     
-    #parameters of Fermionic gate U
-    L = 3                   #length 
+    #parameters of Fermionic circuit U
+    L = 3                   #length of U
     theta1 = cmath.pi/3
     theta2 = cmath.pi/6
     theta3 = cmath.pi/3
@@ -196,5 +205,15 @@ def MajoranaPropagation():
         print("Level", i+1, ":")
         PpgList.PrintFrom(lv_st, lv_end)
 
+    #compute expectation value
+    Expect = 0
+    for i in range(lv_st, lv_end + 1):
+        if(PpgList[i].IsPaired()):
+            Paircnt = PpgList[i].IsPaired()
+            print("Paired nodes = ", PpgList[i].b)
+            print("number of pairs = ", Paircnt)
+            Expect += (1j**Paircnt) * PpgList[i].c 
+
+    print("Expectation value calculated by Majorana Propagation = ", Expect)      
 
 MajoranaPropagation()
