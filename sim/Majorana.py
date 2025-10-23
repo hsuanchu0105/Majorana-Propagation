@@ -10,8 +10,11 @@ class Node:
         self.c = c
         self.rb = 0
         self.N = len(b)
-    #return 0 if is not paired, else return number of pairs
-    def IsPaired(self):
+    """
+    returned a numpy array of paired indices (input:2N, output:N), Ex. [0 1 0 0 1 1] -> [0 0 1]
+    if one unpaired is found, one get -1 at the end of the array, and return immediately 
+    """
+    def BinPair(self):
         Pair = []
         for i in range(0, self.N, 2):
             s = self.b[i] + self.b[i+1]
@@ -142,7 +145,7 @@ Main function of Majorana Propagation
 """
 def MajoranaPropagation(trunc, Nin, lenU, U, rho):
 
-    #parameters for truncation
+    # parameters for truncation
     length_trunc = trunc[0]
     coeff_thres = trunc[1]
 
@@ -151,12 +154,12 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
     for i in range(len(Nin)):
         PpgList.insertNodeAtPosition(Nin[i], i)
     
-    #parameters of Fermionic circuit U
-    L = lenU                   #length of U
+    # parameters of Fermionic circuit U
+    L = lenU                   
     
-    
-    lv_st = 0               #start of current level 
-    lv_end = 1              #end of current level 
+    # index bookkeeping of current level 
+    lv_st = 0               
+    lv_end = 1              
     current_pos = 1
     '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
@@ -196,23 +199,19 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
         #print("length = ", PpgList.len)
         lv_st = lv_end + 1
         lv_end = current_pos
-        '''
+        """
         print("Level", i+1, ":")
         PpgList.PrintFrom(lv_st, lv_end)
-        '''
+        """
 
-    #compute expectation value
+    # compute expectation value
     Expect = 0
     for i in range(lv_st, lv_end + 1):
-        Pair = PpgList[i].IsPaired()
-        #print(len(Pair))
-        #print(len(rho))
-        
-        #Pair = np.reshape(Pair, (1, len(Pair)))
+        Pair = PpgList[i].BinPair()
+ 
         if(Pair[-1] != -1):
             while(len(Pair) < len(rho)):
                 Pair = np.append(Pair, 0)
-            #print("Paired nodes = ", PpgList[i].b)
             #print("Pairs = ", Pair)
             PairedOne = np.inner(Pair, rho)
             Expect += ((-1)**PairedOne) * (1j**sum(Pair))* PpgList[i].c  
@@ -229,7 +228,7 @@ b2 = np.array([1, 0, 1, 0])
 M2 = MajoranaOp(4, b2)
 N2 = Node(b2, 1j**M2.rb())
 Init_Node = [N1, N2]
-theta1 = cmath.pi/3
+theta1 = cmath.pi/7
 theta2 = cmath.pi/6
 theta3 = cmath.pi/3
 b1 = np.array([1, 0, 0, 1, 1, 1])
@@ -241,6 +240,8 @@ U = [[theta1, b1]]
 
 rho_st = np.array([0, 0, 0])
 c = np.array([0, 0, 0])
+
+# transform into binary representation |n> = |n_1 n_2 n_3>
 for i in range(8):
     c[0] = i/4
     r1 = i - c[0] * 4
@@ -250,14 +251,15 @@ for i in range(8):
     
     for j in range(3):
         rho_st[j] = c[j]
-    print("input fock state = ", rho_st)
+    print("input Fock state = ", rho_st)
     MajoranaPropagation(trunc_param, Init_Node, 1, U, rho_st)
 #MajoranaPropagation(trunc_param, Init_Node, 3, U, rho_st)
 
 
 
-#direct calculation 
-theta = cmath.pi/3
+# direct calculation 
+theta = cmath.pi/7
+# Pauli gates 
 X = np.array([[0, 1], [1, 0]])
 Y = 1j * np.array([[0, -1], [1, 0]])
 Z = np.array([[1, 0], [0, -1]])
@@ -282,7 +284,6 @@ for i in range(8):
     test = np.eye(8)[i]
     rho = np.reshape(test, (8, 1))
     rhoT = np.transpose(rho)
-    #print(rho @ rhoT)
 
     Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
 
