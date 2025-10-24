@@ -1,5 +1,6 @@
 import cmath 
 import numpy as np
+from scipy.linalg import expm, sinm, cosm 
 
 """
 Node used for Majorana Propagation. Each node contains one binary representation and coefficient (default as 1)
@@ -11,7 +12,7 @@ class Node:
         self.rb = 0
         self.N = len(b)
     """
-    returned a numpy array of paired indices (input:2N, output:N), Ex. [0 1 0 0 1 1] -> [0 0 1]
+    returned a numpy array of paired indices (input:2N, output:N), Ex. [0 1 0 0 1 1] -> [-1]
     if one unpaired is found, one get -1 at the end of the array, and return immediately 
     """
     def BinPair(self):
@@ -46,8 +47,8 @@ class MajoranaOp:
 Majorana Propagation for 1 Fermionic gate
 """
 def M1Prg(Nin, theta_ex, b_ex):
-    neg_cnt = 0                             #negative sign from anti-commutivity 
-    cons_len = min(len(b_ex), len(Nin.b))        #considered length
+    neg_cnt = 0                                 #negative sign from anti-commutivity 
+    cons_len = min(len(b_ex), len(Nin.b))       #considered length
     
     #sign added by multiplication of two Majorana operators (nodes)
     for i in range(cons_len):
@@ -213,7 +214,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
             while(len(Pair) < len(rho)):
                 Pair = np.append(Pair, 0)
             #print("Pairs = ", Pair)
-            PairedOne = np.inner(Pair, rho)
+            PairedOne = np.inner(Pair, rho)           # { # i | |n_i> = 1 and (b_{2i}, b_{2i+1}) is paired }
             Expect += ((-1)**PairedOne) * (1j**sum(Pair))* PpgList[i].c  
 
     print("Expectation value by Majorana Propagation = ", Expect)      
@@ -272,8 +273,11 @@ m4 = np.kron(np.kron(Z, Y), I)
 m5 = np.kron(np.kron(Z, Z), X)
 m6 = np.kron(np.kron(Z, Z), Y)
 
+#initial 
 Mb = 1j * m1 @ m2
 Mc = 1j * m1 @ m3
+
+
 Mbj = m1 @ m4 @ m5 @ m6
 
 #print("Mb = ", Mb)
@@ -285,6 +289,10 @@ for i in range(8):
     rho = np.reshape(test, (8, 1))
     rhoT = np.transpose(rho)
 
-    Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
+    #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
+    
+    Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
 
     print("Expectation value by direct calculation = ", Expect_dir)
+
+
