@@ -1,3 +1,5 @@
+import numpy as np
+"""
 class Node:
     def __init__(self, c = 1):
         self.c = c
@@ -67,3 +69,51 @@ tl.traverseAndPrint()
 print(tl[1].c)
 tl.deleteSpecificNode(N2)
 tl.traverseAndPrint()
+"""
+# Pauli gates 
+X = np.array([[0, 1], [1, 0]])
+Y = 1j * np.array([[0, -1], [1, 0]])
+Z = np.array([[1, 0], [0, -1]])
+I = np.eye(2)
+
+m1 = np.kron(np.kron(X, I), I)
+m2 = np.kron(np.kron(Y, I), I)
+m3 = np.kron(np.kron(Z, X), I)
+m4 = np.kron(np.kron(Z, Y), I)
+m5 = np.kron(np.kron(Z, Z), X)
+m6 = np.kron(np.kron(Z, Z), Y)
+
+Maj_mtx = [m1, m2, m3, m4, m5, m6]
+
+class MajoranaOp:   
+    def __init__(self, N, b):
+        self.b = b 
+        self.N = N                          # 2N in paper
+    def rb(self):
+        w = sum(self.b)
+        if(w % 4 == 0 or w % 4 == 1):
+            return 0
+        else:
+            return 1
+    
+def Maj_to_mtx(len, MajIniList):
+    
+
+    mtx = np.zeros((2 ** 3, 2**3))
+    for i in range(len):
+        MajOp = MajIniList[i]
+        x = np.eye(2**3) * (1j ** MajOp.rb())
+        for j in range(MajOp.N):
+            if(MajOp.b[j]==1):
+                x = x @ Maj_mtx[j]
+        mtx = mtx + x
+    return mtx 
+
+b1 = np.array([1, 0, 1, 0])
+b2 = np.array([1, 0, 0, 0, 0, 0])
+M1 = MajoranaOp(4, b1)
+M2 = MajoranaOp(6, b2)
+mtx = Maj_to_mtx(1, [M1])
+print(mtx)
+
+print("difference = ", mtx - 1j * m1 @ m3)

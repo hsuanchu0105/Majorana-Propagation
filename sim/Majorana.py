@@ -2,6 +2,21 @@ import cmath
 import numpy as np
 from scipy.linalg import expm, sinm, cosm 
 
+# Pauli gates 
+X = np.array([[0, 1], [1, 0]])
+Y = 1j * np.array([[0, -1], [1, 0]])
+Z = np.array([[1, 0], [0, -1]])
+I = np.eye(2)
+
+m1 = np.kron(np.kron(X, I), I)
+m2 = np.kron(np.kron(Y, I), I)
+m3 = np.kron(np.kron(Z, X), I)
+m4 = np.kron(np.kron(Z, Y), I)
+m5 = np.kron(np.kron(Z, Z), X)
+m6 = np.kron(np.kron(Z, Z), Y)
+
+Maj_mtx = [m1, m2, m3, m4, m5, m6]
+
 """
 Node used for Majorana Propagation. Each node contains one binary representation and coefficient (default as 1)
 """
@@ -100,7 +115,6 @@ class LinkedList:
                 if currentNode is None:
                     break
                 currentNode = currentNode.next
-
             newNode.next = currentNode.next
             currentNode.next = newNode
         self.len +=1 
@@ -140,7 +154,17 @@ class LinkedList:
             for i in range(position, 0, -1):
                 currentNode = currentNode.next
             return currentNode
-      
+
+def Maj_to_mtx(len, MajIniList):
+    mtx = np.zeros((2 ** 3, 2**3))
+    for i in range(len):
+        MajOp = MajIniList[i]
+        x = np.eye(2**3) * (1j ** MajOp.rb())
+        for j in range(MajOp.N):
+            if(MajOp.b[j]==1):
+                x = x @ Maj_mtx[j]
+        mtx = mtx + x
+    return mtx
 """
 Main function of Majorana Propagation 
 """
@@ -160,8 +184,8 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
     
     # index bookkeeping of current level 
     lv_st = 0               
-    lv_end = 1              
-    current_pos = 1
+    lv_end = len(Nin) - 1
+    current_pos = len(Nin) - 1
     '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
@@ -192,7 +216,11 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
                 Nl = Node(PpgList[j].b, coeff1) 
                 Nr = Node(bnew, coeff2)
                 PpgList.insertNodeAtPosition(Nl, current_pos + 1)
-                if(sum(bnew) <= length_trunc and np.abs(coeff2) > coeff_thres): #length truncation and coefficient truncation 
+                if(sum(bnew) > length_trunc):
+                    print("length truncation")
+                elif(np.abs(coeff2) < coeff_thres):
+                    print("coefficient truncation")
+                else:
                     PpgList.insertNodeAtPosition(Nr, current_pos + 2)
                     current_pos += 1
                 current_pos += 1
@@ -200,10 +228,10 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
         #print("length = ", PpgList.len)
         lv_st = lv_end + 1
         lv_end = current_pos
-        """
+        #"""
         print("Level", i+1, ":")
         PpgList.PrintFrom(lv_st, lv_end)
-        """
+        #"""
 
     # compute expectation value
     Expect = 0
@@ -221,29 +249,76 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
 
 
 
-trunc_param = np.array([4, 1e-4])
+trunc_param = np.array([20, 1e-10])
+
+"""
+init_len = np.random.randint(1, 5)
+
+maj_bin = []
+for i in range(init_len):
+    b = np.random.randint(0, 2, size=6)
+    maj_bin.append(b)
+
+print(maj_bin)
+
+#Initial Majorana operator
+init_maj =[]
+for i in range(init_len):
+    M = MajoranaOp(len(maj_bin[i]), maj_bin[i])
+    init_maj.append(M)
+
+Init_Node = []
+for i in range(init_len):
+    N = Node(maj_bin[i], 1j**init_maj[i].rb())
+    Init_Node.append(N)
+
+
+U = []
+U_wid = np.random.randint(1, 8)
+for i in range(U_wid):
+    theta = np.random.rand() * 2 * cmath.pi
+    b = np.random.randint(0, 2, size=6)
+    U.append([theta, b])
+
+"""
+
+
+#"""
 b1 = np.array([1, 1])
-M1 = MajoranaOp(2, b1)
-N1 = Node(b1, 1j**M1.rb())
 b2 = np.array([1, 0, 1, 0])
+M1 = MajoranaOp(2, b1)
 M2 = MajoranaOp(4, b2)
+N1 = Node(b1, 1j**M1.rb())
 N2 = Node(b2, 1j**M2.rb())
-Init_Node = [N1, N2]
+#Init_Node = [N1, N2]
+#init_len = 2
+#init_maj = [M1, M2]
+
+Init_Node = [N2]
+init_len = 1
+init_maj = [M2]
+
 theta1 = cmath.pi/7
 theta2 = cmath.pi/6
 theta3 = cmath.pi/3
 b1 = np.array([1, 0, 0, 1, 1, 1])
-b2 = np.array([0, 0, 1, 1])
-b3 = np.array([0, 0, 1, 0, 0, 0, 1, 1, 1 , 0])
+b2 = np.array([0, 1, 1, 1, 0, 0])
+b3 = np.array([0, 0, 1, 0, 0, 0])
 
-#U = [[theta1, b1], [theta2, b2], [theta3, b3]]
-U = [[theta1, b1]]
+U_wid = 3
+U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 
+#U_wid = 2
+#U = [[theta1, b1], [theta2, b2]]
+#"""
+
+print("Fermionic gate:", U)
+print('\t')
 rho_st = np.array([0, 0, 0])
 c = np.array([0, 0, 0])
 
 # transform into binary representation |n> = |n_1 n_2 n_3>
-for i in range(8):
+for i in range(1):
     c[0] = i/4
     r1 = i - c[0] * 4
     c[1] = r1/2
@@ -253,45 +328,49 @@ for i in range(8):
     for j in range(3):
         rho_st[j] = c[j]
     print("input Fock state = ", rho_st)
-    MajoranaPropagation(trunc_param, Init_Node, 1, U, rho_st)
-#MajoranaPropagation(trunc_param, Init_Node, 3, U, rho_st)
+    MajoranaPropagation(trunc_param, Init_Node, U_wid, U, rho_st)
 
 
+print("\t")
 
 # direct calculation 
-theta = cmath.pi/7
-# Pauli gates 
-X = np.array([[0, 1], [1, 0]])
-Y = 1j * np.array([[0, -1], [1, 0]])
-Z = np.array([[1, 0], [0, -1]])
-I = np.eye(2)
+#theta = cmath.pi/7
 
-m1 = np.kron(np.kron(X, I), I)
-m2 = np.kron(np.kron(Y, I), I)
-m3 = np.kron(np.kron(Z, X), I)
-m4 = np.kron(np.kron(Z, Y), I)
-m5 = np.kron(np.kron(Z, Z), X)
-m6 = np.kron(np.kron(Z, Z), Y)
 
 #initial 
-Mb = 1j * m1 @ m2
-Mc = 1j * m1 @ m3
+#Mb = 1j * m1 @ m2
+#Mc = 1j * m1 @ m3
 
 
-Mbj = m1 @ m4 @ m5 @ m6
+#Mbj = m1 @ m4 @ m5 @ m6
 
 #print("Mb = ", Mb)
 #print("Mc = ", Mc)
 #print("Mbj = ", Mbj)
 
-for i in range(8):
+
+
+for i in range(2):
     test = np.eye(8)[i]
     rho = np.reshape(test, (8, 1))
     rhoT = np.transpose(rho)
 
+    #print(rho)
+    
+    H = Maj_to_mtx(init_len, init_maj)
+    #print(H)
     #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
     
-    Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
+    for k in range(U_wid):
+        M = MajoranaOp(len(U[k][1]), U[k][1]) 
+        Mbj = Maj_to_mtx(1, [M])
+        theta = U[k][0]
+        H = expm(1j * theta  *  Mbj/2) @ H @ expm(-1j * theta  *  Mbj/2)
+        #print(H)
+    
+    print(H)
+    Expect_dir = np.trace(rho @ rhoT @ H)
+    #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
 
     print("Expectation value by direct calculation = ", Expect_dir)
 
