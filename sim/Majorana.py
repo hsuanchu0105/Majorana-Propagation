@@ -284,12 +284,13 @@ for i in range(U_wid):
 
 
 #"""
-b1 = np.array([1, 1])
-b2 = np.array([1, 0, 1, 0])
-M1 = MajoranaOp(2, b1)
-M2 = MajoranaOp(4, b2)
-N1 = Node(b1, 1j**M1.rb())
-N2 = Node(b2, 1j**M2.rb())
+a1 = np.array([1, 1])
+a2 = np.array([1, 0, 1, 0])
+M1 = MajoranaOp(2, a1)
+M2 = MajoranaOp(4, a2)
+N1 = Node(a1, 1j**M1.rb())
+N2 = Node(a2, 1j**M2.rb())
+
 #Init_Node = [N1, N2]
 #init_len = 2
 #init_maj = [M1, M2]
@@ -305,11 +306,25 @@ b1 = np.array([1, 0, 0, 1, 1, 1])
 b2 = np.array([0, 1, 1, 1, 0, 0])
 b3 = np.array([0, 0, 1, 0, 0, 0])
 
+#U_wid = 3
+#U = [[theta1, b1], [theta2, b2], [theta3, b3]]
+
+
+theta1 = 0.45
+theta2 = 0.53
+theta3 = 1.05
+b1 = np.array([1, 1, 0, 0, 1, 0])
+b2 = np.array([0, 0, 0, 1, 1, 1])
+b3 = np.array([0, 1, 0, 1, 0, 1])
 U_wid = 3
 U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 
-#U_wid = 2
-#U = [[theta1, b1], [theta2, b2]]
+#theta1 = 0.45
+
+#b1 = np.array([1, 1, 0, 1, 0, 0])
+
+#U_wid = 1
+#U = [[theta1, b1]]
 #"""
 
 print("Fermionic gate:", U)
@@ -350,7 +365,7 @@ print("\t")
 
 
 
-for i in range(2):
+for i in range(1):
     test = np.eye(8)[i]
     rho = np.reshape(test, (8, 1))
     rhoT = np.transpose(rho)
