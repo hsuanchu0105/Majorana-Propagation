@@ -1,6 +1,6 @@
 import cmath 
 import numpy as np
-from scipy.linalg import expm, sinm, cosm 
+from scipy.linalg import expm
 
 # Pauli gates 
 X = np.array([[0, 1], [1, 0]])
@@ -204,7 +204,8 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
             short_padded = np.zeros_like(long_arr)
             short_padded[:short_arr.shape[0]] = short_arr
 
-            if(np.inner(short_padded, long_arr) % 2 == 0): #if M_b and M_{b_j} commute
+            #if(np.inner(short_padded, long_arr) % 2 == 0):
+            if((sum(short_padded) * sum(long_arr) - np.inner(short_padded, long_arr)) % 2 == 0): #if M_b and M_{b_j} commute
                 #pass
                 N = Node(PpgList[j].b, PpgList[j].c)
                 PpgList.insertNodeAtPosition(N, current_pos + 1)
@@ -228,10 +229,10 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
         #print("length = ", PpgList.len)
         lv_st = lv_end + 1
         lv_end = current_pos
-        #"""
+        """
         print("Level", i+1, ":")
         PpgList.PrintFrom(lv_st, lv_end)
-        #"""
+        """
 
     # compute expectation value
     Expect = 0
@@ -251,12 +252,15 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
 
 trunc_param = np.array([20, 1e-10])
 
-"""
+#"""
 init_len = np.random.randint(1, 5)
 
 maj_bin = []
 for i in range(init_len):
+    #b = np.array([1,1, 1])
+    #while(sum(b)%2 != 0 or sum(b)== 1):
     b = np.random.randint(0, 2, size=6)
+    #print("length= ", len(b))
     maj_bin.append(b)
 
 print(maj_bin)
@@ -277,55 +281,15 @@ U = []
 U_wid = np.random.randint(1, 8)
 for i in range(U_wid):
     theta = np.random.rand() * 2 * cmath.pi
+    #b = np.array([1,1, 1])
+    #while(sum(b)%2 != 0 or sum(b)== 1):
     b = np.random.randint(0, 2, size=6)
     U.append([theta, b])
 
-"""
-
-
 #"""
-a1 = np.array([1, 1])
-a2 = np.array([1, 0, 1, 0])
-M1 = MajoranaOp(2, a1)
-M2 = MajoranaOp(4, a2)
-N1 = Node(a1, 1j**M1.rb())
-N2 = Node(a2, 1j**M2.rb())
-
-#Init_Node = [N1, N2]
-#init_len = 2
-#init_maj = [M1, M2]
-
-Init_Node = [N2]
-init_len = 1
-init_maj = [M2]
-
-theta1 = cmath.pi/7
-theta2 = cmath.pi/6
-theta3 = cmath.pi/3
-b1 = np.array([1, 0, 0, 1, 1, 1])
-b2 = np.array([0, 1, 1, 1, 0, 0])
-b3 = np.array([0, 0, 1, 0, 0, 0])
-
-#U_wid = 3
-#U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 
 
-theta1 = 0.45
-theta2 = 0.53
-theta3 = 1.05
-b1 = np.array([1, 1, 0, 0, 1, 0])
-b2 = np.array([0, 0, 0, 1, 1, 1])
-b3 = np.array([0, 1, 0, 1, 0, 1])
-U_wid = 3
-U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 
-#theta1 = 0.45
-
-#b1 = np.array([1, 1, 0, 1, 0, 0])
-
-#U_wid = 1
-#U = [[theta1, b1]]
-#"""
 
 print("Fermionic gate:", U)
 print('\t')
@@ -333,7 +297,7 @@ rho_st = np.array([0, 0, 0])
 c = np.array([0, 0, 0])
 
 # transform into binary representation |n> = |n_1 n_2 n_3>
-for i in range(1):
+for i in range(8):
     c[0] = i/4
     r1 = i - c[0] * 4
     c[1] = r1/2
@@ -365,7 +329,7 @@ print("\t")
 
 
 
-for i in range(1):
+for i in range(8):
     test = np.eye(8)[i]
     rho = np.reshape(test, (8, 1))
     rhoT = np.transpose(rho)
@@ -380,13 +344,17 @@ for i in range(1):
         M = MajoranaOp(len(U[k][1]), U[k][1]) 
         Mbj = Maj_to_mtx(1, [M])
         theta = U[k][0]
+        #print(theta)
         H = expm(1j * theta  *  Mbj/2) @ H @ expm(-1j * theta  *  Mbj/2)
         #print(H)
     
-    print(H)
+    #print(H)
+    #print("diff ", H - H.conj().T)
     Expect_dir = np.trace(rho @ rhoT @ H)
     #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
 
     print("Expectation value by direct calculation = ", Expect_dir)
+
+
 
 
