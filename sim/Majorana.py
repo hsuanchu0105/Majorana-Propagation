@@ -1,6 +1,7 @@
 import cmath 
 import numpy as np
 from scipy.linalg import expm
+import functools
 
 # Pauli gates 
 X = np.array([[0, 1], [1, 0]])
@@ -157,6 +158,7 @@ class LinkedList:
 
 def Maj_to_mtx(len, MajIniList):
     mtx = np.zeros((2 ** 3, 2**3))
+
     for i in range(len):
         MajOp = MajIniList[i]
         x = np.eye(2**3) * (1j ** MajOp.rb())
@@ -229,10 +231,10 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
         #print("length = ", PpgList.len)
         lv_st = lv_end + 1
         lv_end = current_pos
-        """
+        #"""
         print("Level", i+1, ":")
         PpgList.PrintFrom(lv_st, lv_end)
-        """
+        #"""
 
     # compute expectation value
     Expect = 0
@@ -246,9 +248,27 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
             PairedOne = np.inner(Pair, rho)           # { # i | |n_i> = 1 and (b_{2i}, b_{2i+1}) is paired }
             Expect += ((-1)**PairedOne) * (1j**sum(Pair))* PpgList[i].c  
 
-    print("Expectation value by Majorana Propagation = ", Expect)      
+    #print("Expectation value by Majorana Propagation = ", Expect)      
+    #compute output matrix 
 
+    
+    Out_mtx = np.zeros((2**3, 2**3), dtype = complex)
+    for i in range(lv_st, lv_end + 1):   
+        bin = PpgList[i].b
+        coeff = PpgList[i].c
 
+        factors = [Maj_mtx[j] for j in range(6) if bin[j] == 1]
+        
+        #print("factors=", factors)
+        #print("product by hand", factors[0] @ factors[1])
+
+        Maj1 = functools.reduce(np.dot, factors, np.eye(2**3, dtype = complex))
+        
+
+        Out_mtx += coeff * Maj1
+    
+    print(Out_mtx)
+    return Out_mtx
 
 trunc_param = np.array([20, 1e-10])
 
@@ -263,7 +283,7 @@ for i in range(init_len):
     #print("length= ", len(b))
     maj_bin.append(b)
 
-print(maj_bin)
+#print(maj_bin)
 
 #Initial Majorana operator
 init_maj =[]
@@ -289,10 +309,8 @@ for i in range(U_wid):
 #"""
 
 
-
-
-print("Fermionic gate:", U)
-print('\t')
+#print("Fermionic gate:", U)
+#print('\t')
 rho_st = np.array([0, 0, 0])
 c = np.array([0, 0, 0])
 
@@ -306,26 +324,13 @@ for i in range(8):
     
     for j in range(3):
         rho_st[j] = c[j]
-    print("input Fock state = ", rho_st)
-    MajoranaPropagation(trunc_param, Init_Node, U_wid, U, rho_st)
+    #print("input Fock state = ", rho_st)
+    #MajoranaPropagation(trunc_param, Init_Node, U_wid, U, rho_st)
 
 
-print("\t")
+#print("\t")
 
 # direct calculation 
-#theta = cmath.pi/7
-
-
-#initial 
-#Mb = 1j * m1 @ m2
-#Mc = 1j * m1 @ m3
-
-
-#Mbj = m1 @ m4 @ m5 @ m6
-
-#print("Mb = ", Mb)
-#print("Mc = ", Mc)
-#print("Mbj = ", Mbj)
 
 
 
@@ -353,8 +358,103 @@ for i in range(8):
     Expect_dir = np.trace(rho @ rhoT @ H)
     #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
 
-    print("Expectation value by direct calculation = ", Expect_dir)
+    #print("Expectation value by direct calculation = ", Expect_dir)
 
 
 
+# free-fermion Hamiltonian 
 
+
+h = np.zeros((6,6))
+for i in range(6):
+    for j in range(i+1):
+        #h[i][j] = np.random.randint(0, 2)
+        if(i==5 and j==0) :
+            h[i][j] = -1
+
+for i in range(6):
+    for j in range(i+1, 6):
+        h[i][j] = -h[j][i]
+
+print(h)
+
+t = 0.1
+
+R = expm(4 * h * t)
+
+#a1 = np.array([1, 1, 0, 0, 0, 0])
+e1 = np.array([1, 0, 0, 0, 0, 0])
+e3 = np.array([0, 0, 1, 0, 0, 0])
+test = e1 + e3
+#print("test = ", test)
+#M1 = MajoranaOp(6, a1)
+Maj2 = MajoranaOp(6, test)
+#N1 = Node(a1, 1j**M1.rb())
+Node2 = Node(test, 1j**Maj2.rb())
+
+Init_Node_test = [Node2]
+init_len = 1
+init_maj = [Maj2]
+
+a_out1 = R @ np.transpose(e1)
+a_out2 = R @ np.transpose(e3)
+
+#print("R = ", R)
+#print("symmetric check = ", R @ np.transpose(R), np.linalg.det(R))
+
+print(a_out1)
+print(a_out2)
+
+Out_maj1 = np.zeros((2**3, 2**3), dtype = complex)
+for i in range(6):
+    Out_maj1 += Maj_mtx[i] * a_out1[i]
+
+
+Out_maj2 = np.zeros((2**3, 2**3), dtype = complex)
+for i in range(6):
+    Out_maj2 += Maj_mtx[i] * a_out2[i]
+
+Rot_mtx = 1j* Out_maj1 @ Out_maj2
+print("Output by rotation = ", Rot_mtx)
+
+U = []
+
+
+for i in range(6):
+    for j in range(i+1, 6):
+        b = np.zeros(6)
+        #if(i == j and h[i][j]!= 0):
+        #    b[i] = 1
+        #    b[j] = 1
+        #    theta = h[i][j] * t
+        #    U.append([theta, b])
+        if(h[i][j]!= 0):
+            b[i] = 1
+            b[j] = 1
+            theta = 4 * h[i][j] * t
+            U.append([theta, b])
+
+
+print("Fermionic gate:", U)
+print('\t')
+rho_st = np.array([0, 0, 0])
+Maj_output = MajoranaPropagation(trunc_param, Init_Node_test, len(U), U, rho_st)
+
+print("difference = ", Maj_output - Rot_mtx )
+
+init_len = 1
+print(Maj2.b)
+H = Maj_to_mtx(init_len, [Maj2])
+
+    #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
+    
+for k in range(len(U)):
+    M = MajoranaOp(len(U[k][1]), U[k][1]) 
+    Mbj = Maj_to_mtx(1, [M])
+    #print("Mbj = ", Mbj)
+    theta = U[k][0]
+    #print(theta)
+    H = expm(1j * theta  *  Mbj/2) @ H @ expm(-1j * theta  *  Mbj/2)
+    print(H)
+
+print("difference 2 = ", Maj_output - H)
