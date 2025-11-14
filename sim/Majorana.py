@@ -379,25 +379,27 @@ for i in range(6):
 print(h)
 
 t = 0.1
+#Rotation matrix
+R = expm(4 * t * h )
 
-R = expm(4 * h * t)
+can_bas = [] #canonical basis
+for i in range(6):
+    can_bas.append(np.eye(6)[i])
 
-#a1 = np.array([1, 1, 0, 0, 0, 0])
-e1 = np.array([1, 0, 0, 0, 0, 0])
-e3 = np.array([0, 0, 1, 0, 0, 0])
-test = e1 + e3
-#print("test = ", test)
-#M1 = MajoranaOp(6, a1)
+
+test = can_bas[0] + can_bas[2]
+
 Maj2 = MajoranaOp(6, test)
-#N1 = Node(a1, 1j**M1.rb())
 Node2 = Node(test, 1j**Maj2.rb())
 
 Init_Node_test = [Node2]
 init_len = 1
 init_maj = [Maj2]
 
-a_out1 = R @ np.transpose(e1)
-a_out2 = R @ np.transpose(e3)
+#a_out1 = R @ np.transpose(e1)
+a_out1 = R[0, :]
+a_out2 = R[2, :]
+
 
 #print("R = ", R)
 #print("symmetric check = ", R @ np.transpose(R), np.linalg.det(R))
@@ -409,7 +411,8 @@ Out_maj1 = np.zeros((2**3, 2**3), dtype = complex)
 for i in range(6):
     Out_maj1 += Maj_mtx[i] * a_out1[i]
 
-
+Free_Hamil = 1j*  2 * m1 @ m6
+print("Rotation check 1= ", expm(1j * Free_Hamil * t) @ m1 @ expm(-1j * Free_Hamil * t) - Out_maj1)
 Out_maj2 = np.zeros((2**3, 2**3), dtype = complex)
 for i in range(6):
     Out_maj2 += Maj_mtx[i] * a_out2[i]
