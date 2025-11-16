@@ -3,6 +3,11 @@ import numpy as np
 from scipy.linalg import expm
 import functools
 
+#fermionic mode 
+Nm = 3
+
+Nm2 = 2 * Nm
+
 # Pauli gates 
 X = np.array([[0, 1], [1, 0]])
 Y = 1j * np.array([[0, -1], [1, 0]])
@@ -270,6 +275,56 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
     print(Out_mtx)
     return Out_mtx
 
+
+# First change H' into new basis, then write in the form of fermionic gates
+def BasisChange(N, h, V, t):
+	# N: number of Fermionic mode
+	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
+    # V: 4-leg tensor 
+    # t: evolution time 
+	# output: fermionic gate
+
+	
+    R = expm(4 * h * t)
+    Rt = np.transpose(R)
+    V1 = np.einsum("jklm, jn -> nklm", V, Rt)
+    V2 = np.einsum("nklm, ko -> nolm", V1, Rt)
+    V3 = np.einsum("nolm, lp -> nopm", V2, Rt)
+    V4 = np.einsum("nopm, mq -> nopq", V3, Rt)
+	
+    coef_sh = V4.shape
+    U = []
+
+    for k in range():
+        for l in range():
+            for m in range():
+                for n in range():
+                    b = np.zoers(2 * N)
+                    if(V4[k][l][m][n] !=0):
+                        theta = 2 * V4[k][l][m][n] * t
+                        b[k] = 1
+                        b[l] = 1
+                        b[m] = 1
+                        b[n] = 1
+                        U.append([theta, b])
+    return U
+
+def twofourMajStrEvo(N, h, V, dt, n, gam_0, Majmon_in, Init_Node, trunc_param, rho_st):
+	# N: number of Fermionic mode
+	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
+  # V: 4-leg tensor 
+  # t: evolution time 
+	# gam_0: initial majorana operator (matrix vector)
+	# Majmon_in : binary of input Majorana monomial (scaler vector)
+	# Initial Node 
+	# output: coefficient of majorana operator after evolution
+	
+	Node_next = Init_Node
+	
+	for i in range(n):
+		U = BasisChange(N, h, V, t)
+		Node_next = MajoranaPropagation(trunc_param, Init_Node, len(U), U, rho_st)
+
 trunc_param = np.array([20, 1e-10])
 
 #"""
@@ -322,7 +377,7 @@ for i in range(8):
     r2 = r1 - c[1] * 2
     c[2] = r2
     
-    for j in range(3):
+    for j in range(Nm):
         rho_st[j] = c[j]
     #print("input Fock state = ", rho_st)
     #MajoranaPropagation(trunc_param, Init_Node, U_wid, U, rho_st)
@@ -334,9 +389,9 @@ for i in range(8):
 
 
 
-for i in range(8):
-    test = np.eye(8)[i]
-    rho = np.reshape(test, (8, 1))
+for i in range(2**Nm):
+    test = np.eye(2**Nm)[i]
+    rho = np.reshape(test, (2**Nm, 1))
     rhoT = np.transpose(rho)
 
     #print(rho)
@@ -365,31 +420,31 @@ for i in range(8):
 # free-fermion Hamiltonian 
 
 
-h = np.zeros((6,6))
-for i in range(6):
+h = np.zeros((Nm2,Nm2))
+for i in range(Nm2):
     for j in range(i+1):
         #h[i][j] = np.random.randint(0, 2)
         if(i==5 and j==0) :
             h[i][j] = -1
 
-for i in range(6):
-    for j in range(i+1, 6):
+for i in range(Nm2):
+    for j in range(i+1, Nm2):
         h[i][j] = -h[j][i]
 
 print(h)
 
 t = 0.1
 #Rotation matrix
-R = expm(4 * t * h )
+R = expm(4 * t * h)
 
 can_bas = [] #canonical basis
-for i in range(6):
-    can_bas.append(np.eye(6)[i])
+for i in range(Nm2):
+    can_bas.append(np.eye(Nm2)[i])
 
 
 test = can_bas[0] + can_bas[2]
 
-Maj2 = MajoranaOp(6, test)
+Maj2 = MajoranaOp(Nm2, test)
 Node2 = Node(test, 1j**Maj2.rb())
 
 Init_Node_test = [Node2]
@@ -407,14 +462,14 @@ a_out2 = R[2, :]
 print(a_out1)
 print(a_out2)
 
-Out_maj1 = np.zeros((2**3, 2**3), dtype = complex)
+Out_maj1 = np.zeros((2**Nm, 2**Nm), dtype = complex)
 for i in range(6):
     Out_maj1 += Maj_mtx[i] * a_out1[i]
 
 Free_Hamil = 1j*  2 * m1 @ m6
 print("Rotation check 1= ", expm(1j * Free_Hamil * t) @ m1 @ expm(-1j * Free_Hamil * t) - Out_maj1)
-Out_maj2 = np.zeros((2**3, 2**3), dtype = complex)
-for i in range(6):
+Out_maj2 = np.zeros((2**Nm, 2**Nm), dtype = complex)
+for i in range(Nm2):
     Out_maj2 += Maj_mtx[i] * a_out2[i]
 
 Rot_mtx = 1j* Out_maj1 @ Out_maj2
@@ -423,9 +478,9 @@ print("Output by rotation = ", Rot_mtx)
 U = []
 
 
-for i in range(6):
-    for j in range(i+1, 6):
-        b = np.zeros(6)
+for i in range(Nm2):
+    for j in range(i+1, Nm2):
+        b = np.zeros(Nm2)
         #if(i == j and h[i][j]!= 0):
         #    b[i] = 1
         #    b[j] = 1
@@ -445,12 +500,13 @@ Maj_output = MajoranaPropagation(trunc_param, Init_Node_test, len(U), U, rho_st)
 
 print("difference = ", Maj_output - Rot_mtx )
 
+'''
 init_len = 1
 print(Maj2.b)
 H = Maj_to_mtx(init_len, [Maj2])
 
     #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
-    
+
 for k in range(len(U)):
     M = MajoranaOp(len(U[k][1]), U[k][1]) 
     Mbj = Maj_to_mtx(1, [M])
@@ -459,5 +515,7 @@ for k in range(len(U)):
     #print(theta)
     H = expm(1j * theta  *  Mbj/2) @ H @ expm(-1j * theta  *  Mbj/2)
     print(H)
+'''
+#print("difference 2 = ", Maj_output - H)
 
-print("difference 2 = ", Maj_output - H)
+
