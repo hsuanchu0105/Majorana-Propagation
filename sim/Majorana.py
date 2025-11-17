@@ -123,6 +123,7 @@ class LinkedList:
             newNode.next = currentNode.next
             currentNode.next = newNode
         self.len +=1 
+
     def deleteSpecificNode(self, nodeToDelete):
         if self.head == nodeToDelete:
             self.head = self.head.next
@@ -137,20 +138,36 @@ class LinkedList:
             else:
                 currentNode.next = currentNode.next.next
         self.len -= 1
+
+    #endIndex exclusive 
+    def getSlice(self, startIndex, endIndex):
+        assert endIndex > startIndex 
+        currentNode = self.head
+        for i in range(startIndex):
+            currentNode = currentNode.next
+        self.head = currentNode
+        for i in range(endIndex - startIndex):
+            currentNode = currentNode.next
+        currentNode = None
+
+        self.len = endIndex - startIndex
+
     def traverseAndPrint(self):
         currentNode = self.head
         while currentNode:
             print( currentNode.b, ",", f"{currentNode.c.real:.3f}{currentNode.c.imag:+.3f}j", end=" -> ")
             currentNode = currentNode.next
         print("null")
+
     def PrintFrom(self, start, end):
         currentNode = self.head
         for i in range(start):
             currentNode = currentNode.next
-        for i in range(start, end+1):
+        for i in range(start, end):
             print( currentNode.b, ",", f"{currentNode.c.real:.3f}{currentNode.c.imag:+.3f}j", end=" -> ")
             currentNode = currentNode.next
         print("null")
+
     def __getitem__(self, position):
         if(position ==0):
             return self.head
@@ -187,20 +204,20 @@ def ExpectVal(Input_Node, lenN, rho):
     return Expect
 
 # tranform observable in Majorana form into matrix form 
-def ObsToMtx(Input_Node, lenN, nf):
-    mtx = np.zeros((2**nf, 2**nf), dtype = complex)
+def ObsToMtx(Input_Node, lenN, N):
+    mtx = np.zeros((2**N, 2**N), dtype = complex)
     for i in range(lenN):   
         bin = Input_Node[i].b
         coeff = Input_Node[i].c
-        factors = [Maj_mtx[j] for j in range(2 * nf) if bin[j] == 1]
-        Maj1 = functools.reduce(np.dot, factors, np.eye(2**nf, dtype = complex))
+        factors = [Maj_mtx[j] for j in range(2 * N) if bin[j] == 1]
+        Maj1 = functools.reduce(np.dot, factors, np.eye(2**N, dtype = complex))
         mtx += coeff * Maj1
     return mtx
 
 """
 Main function of Majorana Propagation 
 """
-def MajoranaPropagation(trunc, Nin, lenU, U, rho):
+def MajoranaPropagation(trunc, Nin, lenU, U):
 
     # parameters for truncation
     length_trunc = trunc[0]
@@ -221,7 +238,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
     '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
-    PpgList.PrintFrom(lv_st, lv_end)
+    PpgList.PrintFrom(lv_st, lv_end+1)
     '''
 
     for i in range(L):
@@ -260,14 +277,15 @@ def MajoranaPropagation(trunc, Nin, lenU, U, rho):
         #PpgList.traverseAndPrint()
         #print("length = ", PpgList.len)
         lv_st = lv_end + 1
-        lv_end = current_pos
+        lv_end = current_pos + 1
         #"""
         print("Level", i+1, ":")
         PpgList.PrintFrom(lv_st, lv_end)
         #"""
 
-    
+    PpgList.getSlice(lv_st, lv_end)
 
+    return PpgList
 
 
 # First change H' into new basis, then write in the form of fermionic gates
@@ -304,7 +322,7 @@ def BasisChange(N, h, V, t):
 
     return V4, U
 
-def twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param, rho_st):
+def twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
@@ -316,10 +334,9 @@ def twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param, rho_st):
 	
     Node_next = Init_Node
 
-
     for i in range(n):
         V, U = BasisChange(N, h, V, dt) #updating V
-        Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, rho_st)
+        Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U)
 
     return Node_next
 
