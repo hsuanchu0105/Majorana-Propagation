@@ -295,10 +295,10 @@ def BasisChange(N, h, V, t):
     coef_sh = V4.shape
     U = []
 
-    for k in range():
-        for l in range():
-            for m in range():
-                for n in range():
+    for k in range(coef_sh[0]):
+        for l in range(coef_sh[1]):
+            for m in range(coef_sh[2]):
+                for n in range(coef_sh[3]):
                     b = np.zoers(2 * N)
                     if(V4[k][l][m][n] !=0):
                         theta = 2 * V4[k][l][m][n] * t
@@ -307,23 +307,27 @@ def BasisChange(N, h, V, t):
                         b[m] = 1
                         b[n] = 1
                         U.append([theta, b])
-    return U
 
-def twofourMajStrEvo(N, h, V, dt, n, gam_0, Majmon_in, Init_Node, trunc_param, rho_st):
+    return V4, U
+
+def twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param, rho_st):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
-  # V: 4-leg tensor 
-  # t: evolution time 
+    # V: 4-leg tensor 
+    # dt: evolution time each timestep 
 	# gam_0: initial majorana operator (matrix vector)
 	# Majmon_in : binary of input Majorana monomial (scaler vector)
 	# Initial Node 
 	# output: coefficient of majorana operator after evolution
 	
-	Node_next = Init_Node
-	
-	for i in range(n):
-		U = BasisChange(N, h, V, t)
-		Node_next = MajoranaPropagation(trunc_param, Init_Node, len(U), U, rho_st)
+    Node_next = Init_Node
+
+
+    for i in range(n):
+        V, U = BasisChange(N, h, V, dt) #updating V
+        Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, rho_st)
+
+    return Node_next
 
 trunc_param = np.array([20, 1e-10])
 
