@@ -231,9 +231,9 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     # parameters of Fermionic circuit U
     L = lenU                   
     
-    # index bookkeeping of current level 
+    # index bookkeeping of current level (lv_end exclusive)
     lv_st = 0               
-    lv_end = len(Nin) - 1
+    lv_end = len(Nin) 
     current_pos = len(Nin) - 1
     '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
@@ -242,7 +242,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     '''
 
     for i in range(L):
-        for j in range(lv_st, lv_end + 1):
+        for j in range(lv_st, lv_end):
             if(len(PpgList[j].b) < len(U[i][1])):
                 long_arr = U[i][1]
                 short_arr = PpgList[j].b
@@ -276,7 +276,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
                 current_pos += 1
         #PpgList.traverseAndPrint()
         #print("length = ", PpgList.len)
-        lv_st = lv_end + 1
+        lv_st = lv_end 
         lv_end = current_pos + 1
         """
         print("Level", i+1, ":")
