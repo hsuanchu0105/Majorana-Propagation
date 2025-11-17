@@ -278,10 +278,10 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
         #print("length = ", PpgList.len)
         lv_st = lv_end + 1
         lv_end = current_pos + 1
-        #"""
+        """
         print("Level", i+1, ":")
         PpgList.PrintFrom(lv_st, lv_end)
-        #"""
+        """
 
     PpgList.getSlice(lv_st, lv_end)
 
@@ -340,7 +340,7 @@ def twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param):
 
     return Node_next
 
-trunc_param = np.array([20, 1e-10])
+
 
 #"""
 init_len = np.random.randint(1, 5)
@@ -375,6 +375,8 @@ for i in range(U_wid):
 
 #"""
 
+trunc_param = np.array([20, 1e-10])
+
 
 #print("Fermionic gate:", U)
 #print('\t')
@@ -393,6 +395,9 @@ for i in range(8):
         rho_st[j] = c[j]
     #print("input Fock state = ", rho_st)
     #MajoranaPropagation(trunc_param, Init_Node, U_wid, U, rho_st)
+    Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
+    Exp_val = ExpectVal(Output_Node,Output_Node.len , rho_st)
+    print("Expectation value by Majorana Propagation = ", Exp_val)
 
 
 #print("\t")
@@ -422,7 +427,7 @@ for i in range(2**nf):
     Expect_dir = np.trace(rho @ rhoT @ H)
     #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
 
-    #print("Expectation value by direct calculation = ", Expect_dir)
+    print("Expectation value by direct calculation = ", Expect_dir)
 
 
 
