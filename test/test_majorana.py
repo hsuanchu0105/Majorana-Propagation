@@ -5,6 +5,14 @@ import sys
 sys.path.insert(1, '/mnt/c/Users/faceb/OneDrive/Desktop/TUM_CSE/Guided_research/code')
 import sim 
 
+import itertools
+
+a = np.array([1, 2, 3])
+b = np.array([1, 2, 4])
+c = np.array([3, 5, 4])
+
+print(itertools.product(a,b,c))
+
 """
 a1 = np.array([1, 1])
 a2 = np.array([1, 0, 1, 0])

@@ -202,7 +202,35 @@ def ExpectVal(Input_Node, lenN, rho):
             Expect += ((-1)**PairedOne) * (1j**sum(Pair))* Input_Node[i].c  
 
     return Expect
+def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
+    
+    R0 = expm(2 * h * dt)
+    R = expm(4 * h * dt)
+    Rm = R0
+    for i in range(tstep_num):
+        Rm = R @ Rm 
+    Rm = R0 @ Rm
 
+    lenN = NodeList.len
+    Node_org_basis = [] #Node in original basis 
+
+    for i in range(lenN):
+        coeff = NodeList[i].c
+        bin = NodeList[i].b
+        s = sum(bin)
+        cnt = 0
+        R_sl = np.zeros((s, NodeList[i].N))
+        for k in range(NodeList[i].N):
+            if(bin[k] == 1):
+                R_sl[cnt, :] = R[k, :]
+                cnt += 1
+        
+        for l in range(s):
+            for m in range(NodeList[i].N):
+                if(R_sl[l][m]!=0):
+                    bin_org_bas
+                
+    
 # tranform observable in Majorana form into matrix form 
 def ObsToMtx(Input_Node, lenN, N):
     mtx = np.zeros((2**N, 2**N), dtype = complex)
@@ -294,7 +322,7 @@ def BasisChange(N, h, V, t):
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
     # t: evolution time 
-	# output: fermionic gate
+	# output: tensor after contraction with R^T, resulting fermionic gate
 
 	
     R = expm(4 * h * t)
@@ -431,8 +459,25 @@ for i in range(2**nf):
 
 
 
+N = 3
+h = np.zeros((2*N, 2*N))
+for i in range(2*N):
+    for j in range(i+1):
+        #h[i][j] = np.random.randint(0, 2)
+        if(i==5 and j==0) :
+            h[i][j] = -1
 
+for i in range(nf2):
+    for j in range(i+1, 2*N):
+        h[i][j] = -h[j][i]
 
+dt = 0.1
+n = 5
+V = np.zeros((2**N, 2**N, 2**N, 2**N))
 
+rho_st = np.zeros(3)
+Node_out = twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param)
+Exp_val = Rotated_ExpectVal(Node_out , rho_st)
+print("Expectation value by Majorana Propagation = ", Exp_val)
 
 
