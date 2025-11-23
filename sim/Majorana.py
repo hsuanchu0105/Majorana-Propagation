@@ -214,19 +214,20 @@ def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
     lenN = NodeList.len
     Node_org_basis = [] #Node in original basis 
 
+    n = NodeList[0].N
     for i in range(lenN):
         coeff = NodeList[i].c
         bin = NodeList[i].b
         s = sum(bin)
         cnt = 0
-        R_sl = np.zeros((s, NodeList[i].N))
-        for k in range(NodeList[i].N):
+        R_sl = np.zeros((s, n))
+        for k in range(n):
             if(bin[k] == 1):
                 R_sl[cnt, :] = R[k, :]
                 cnt += 1
         
         for l in range(s):
-            for m in range(NodeList[i].N):
+            for m in range(n):
                 if(R_sl[l][m]!=0):
                     bin_org_bas
                 
@@ -317,15 +318,15 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
 
 
 # First change H' into new basis, then write in the form of fermionic gates
-def BasisChange(N, h, V, t):
+def BasisChange(N, h, V, dt):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
-    # t: evolution time 
+    # dt: time per timestep
 	# output: tensor after contraction with R^T, resulting fermionic gate
 
-	
-    R = expm(4 * h * t)
+    
+    R = expm(4 * h * dt)
     Rt = np.transpose(R)
     V1 = np.einsum("jklm, jn -> nklm", V, Rt)
     V2 = np.einsum("nklm, ko -> nolm", V1, Rt)
@@ -339,24 +340,27 @@ def BasisChange(N, h, V, t):
         for l in range(coef_sh[1]):
             for m in range(coef_sh[2]):
                 for n in range(coef_sh[3]):
-                    b = np.zoers(2 * N)
-                    if(V4[k][l][m][n] !=0):
-                        theta = 2 * V4[k][l][m][n] * t
+                    b = np.zeros(2 * N)
+                    if(V4[k][l][m][n] !=0): # maybe apply a threshold for coefficient
+                        theta = V4[k][l][m][n] * dt
                         b[k] = 1
                         b[l] = 1
                         b[m] = 1
                         b[n] = 1
                         U.append([theta, b])
 
+    for i in range(len(U)-1, -1, -1):
+        U.append(U[i])
+    
+
     return V4, U
 
-def twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param):
+def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
+    # n: number of timesteps
     # dt: evolution time each timestep 
-	# gam_0: initial majorana operator (matrix vector)
-	# Majmon_in : binary of input Majorana monomial (scaler vector)
 	# Initial Node 
 	# output: coefficient of majorana operator after evolution
 	
@@ -477,7 +481,8 @@ V = np.zeros((2**N, 2**N, 2**N, 2**N))
 
 rho_st = np.zeros(3)
 Node_out = twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param)
-Exp_val = Rotated_ExpectVal(Node_out , rho_st)
-print("Expectation value by Majorana Propagation = ", Exp_val)
+print(Node_out)
+#Exp_val = Rotated_ExpectVal(Node_out , rho_st)
+#print("Expectation value by Majorana Propagation = ", Exp_val)
 
 

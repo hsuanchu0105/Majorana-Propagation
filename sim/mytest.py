@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.linalg import expm
+from collections import defaultdict
 
 
 
@@ -82,7 +83,7 @@ def canonicalize_index(idx):
     return sign, tuple(canonical)
 
 
-
+'''
 s = 5
 axes = [np.random.randint(0, 2, size=6) for _ in range(s)]
 shape = tuple(len(a) for a in axes)   
@@ -102,3 +103,54 @@ for idx in np.ndindex(shape):
     )
     # or with 1-based:
     # print(f"{idx_1based}  ->  {sign} * {new_idx_1based}")
+
+'''
+
+def build_canonical_terms(coeff_arrays):
+    """
+    coeff_arrays: list of s numpy arrays, each shape (n,)
+    returns: dict mapping canonical index tuples -> total coefficient
+             key () means the scalar part (no indices)
+    """
+    s = len(coeff_arrays)
+    shape = tuple(len(c) for c in coeff_arrays)  # (n,)*s
+    print("shape = ", shape)
+
+    terms = defaultdict(float)  # {canonical_indices: coefficient}
+
+    for idx in np.ndindex(shape):
+        # coefficients for this combination
+        coeffs = [coeff_arrays[d][idx[d]] for d in range(s)]
+
+        # (1) ignore if all coefficients are zero
+        if all(c == 0 for c in coeffs):
+            continue
+
+        # (2) product of nonzero coefficients
+        nonzero_coeffs = [c for c in coeffs if c != 0]
+        coeff_prod = float(np.prod(nonzero_coeffs))
+
+        # (3) build basis index list from nonzero coefficients
+        #     use +1 if you prefer 1-based indices
+        basis_indices = [idx[d] + 1 for d, c in enumerate(coeffs) if c != 0]
+
+        # (4) canonicalize
+        sign, canon_idx = canonicalize_index(basis_indices)
+        canon_coeff = sign * coeff_prod
+
+        # (5) accumulate
+        terms[canon_idx] += canon_coeff
+
+    return terms
+
+
+coeff_arrays = [
+    np.array([0, 0.1, 1,   0,   0, 0]),  # A
+    np.array([0, 0,   2.0, 0,   0, 0]),  # B
+    #np.array([0, 3.0, 0,   0,   0, 0]),  # C
+]
+
+terms = build_canonical_terms(coeff_arrays)
+
+for idx, coeff in terms.items():
+    print(f"indices {idx} -> coefficient {coeff}")
