@@ -247,6 +247,11 @@ def ObsToMtx(Input_Node, lenN, N):
 Main function of Majorana Propagation 
 """
 def MajoranaPropagation(trunc, Nin, lenU, U):
+    # trunc: List of truncation parameters [length truncation, coefficient truncation]
+    # Nin: List of input nodes 
+    # lenU: width of Fermionic gate 
+    # U: Fermionic gate 
+    # output: 
 
     # parameters for truncation
     length_trunc = trunc[0]
@@ -361,7 +366,7 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
     # V: 4-leg tensor 
     # n: number of timesteps
     # dt: evolution time each timestep 
-	# Initial Node 
+	# Initial Node: 
 	# output: coefficient of majorana operator after evolution
 	
     Node_next = Init_Node
@@ -477,10 +482,10 @@ for i in range(nf2):
 
 dt = 0.1
 n = 5
-V = np.zeros((2**N, 2**N, 2**N, 2**N))
+V = np.zeros((2*N, 2*N, 2*N, 2*N))
 
 rho_st = np.zeros(3)
-Node_out = twofourMajStrEvo(N, h, V, dt, n, Init_Node, trunc_param)
+Node_out = twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param)
 print(Node_out)
 #Exp_val = Rotated_ExpectVal(Node_out , rho_st)
 #print("Expectation value by Majorana Propagation = ", Exp_val)
