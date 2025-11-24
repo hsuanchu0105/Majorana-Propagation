@@ -243,13 +243,13 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     lv_end = len(Nin) 
     current_pos = len(Nin) - 1
 
-    '''
+    #'''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
-    print("input length = ", len(Nin))
+    #print("input length = ", len(Nin))
     for k in range(lv_st, lv_end):
             print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
-    '''
+    #'''
 
     for i in range(L):
         for j in range(lv_st, lv_end):
@@ -270,6 +270,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
                 Nin.append(N)
                 current_pos += 1
             else:
+                
                 coeff1, coeff2, bnew = M1Prg(Nin[j], U[i][0], U[i][1])
                 #print(coeff2)
                 #print(PpgList[j].b)
@@ -288,11 +289,11 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
         #print("length = ", PpgList.len)
         lv_st = lv_end 
         lv_end = current_pos + 1
-        """
+        #"""
         print("Level", i+1, ":")
         for k in range(lv_st, lv_end):
             print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
-        """
+        #"""
 
     Nin = Nin[lv_st: lv_end]
 
@@ -356,7 +357,7 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 
 
 
-#"""
+"""
 init_len = np.random.randint(1, 5)
 
 maj_bin = []
@@ -387,7 +388,7 @@ for i in range(U_wid):
     b = np.random.randint(0, 2, size=6)
     U.append([theta, b])
 
-#"""
+"""
 '''
 a2 = np.array([1, 0, 1, 0, 0, 0])
 M2 = MajoranaOp(6, a2)
@@ -407,6 +408,27 @@ b3 = np.array([0, 0, 1, 0, 0, 0])
 U_wid = 3
 U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 '''
+#'''
+
+a2 = np.array([0, 0, 1, 0, 1, 0])
+M2 = MajoranaOp(6, a2)
+N2 = Node(a2, 1j**M2.rb())
+
+Init_Node = [N2]
+init_len = 1
+init_maj = [M2]
+
+#U_wid = 1
+#theta = 0.2
+#b = np.array([1, 1, 1, 1, 0, 0])
+#U = [[theta, b]]
+
+
+b1 = np.array([1, 1, 0, 0, 0, 0])
+b2 = np.array([1, 1, 1, 1, 0, 0])
+theta1 = 0.4
+theta2= 0.2
+U = [[theta1, b1], [theta2, b2]]
 
 trunc_param = np.array([20, 1e-10])
 
@@ -417,7 +439,7 @@ rho_st = np.array([0, 0, 0])
 c = np.array([0, 0, 0])
 
 # transform into binary representation |n> = |n_1 n_2 n_3>
-for i in range(8):
+for i in range(1):
     c[0] = i/4
     r1 = i - c[0] * 4
     c[1] = r1/2
@@ -447,7 +469,7 @@ for i in range(2**nf):
     #print(H)
     #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
     
-    for k in range(U_wid):
+    for k in range(len(U)):
         M = MajoranaOp(len(U[k][1]), U[k][1]) 
         Mbj = Maj_to_mtx(1, [M])
         theta = U[k][0]
@@ -461,27 +483,30 @@ for i in range(2**nf):
     #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
 
     print("Expectation value by direct calculation = ", Expect_dir)
+#'''
 
 
 
 N = 3
 h = np.zeros((2*N, 2*N))
-for i in range(2*N):
-    for j in range(i+1):
-        #h[i][j] = np.random.randint(0, 2)
-        if(i==5 and j==0) :
-            h[i][j] = -1
+
+h[1][0] = -1
 
 for i in range(nf2):
     for j in range(i+1, 2*N):
         h[i][j] = -h[j][i]
 
+
+print(h)
 dt = 0.1
-n = 5
+n = 1
 V = np.zeros((2*N, 2*N, 2*N, 2*N))
 
-#rho_st = np.zeros(3)
-#Node_out = twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param)
+V[0][1][2][3] = 1
+
+
+rho_st = np.zeros(3)
+Node_out = twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param)
 #print(Node_out)
 #Exp_val = Rotated_ExpectVal(Node_out , rho_st)
 #print("Expectation value by Majorana Propagation = ", Exp_val)

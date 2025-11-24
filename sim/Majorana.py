@@ -411,7 +411,20 @@ for i in range(U_wid):
     U.append([theta, b])
 
 #"""
+"""
+a2 = np.array([1, 1, 0, 0, 0, 0])
+M2 = MajoranaOp(6, a2)
+N2 = Node(a2, 1j**M2.rb())
 
+Init_Node = [N2]
+init_len = 1
+init_maj = [M2]
+
+U_wid = 1
+theta = 0.2
+b = np.array([1, 1, 1, 1, 0, 0])
+U = [[theta, b]]
+"""
 trunc_param = np.array([20, 1e-10])
 
 
