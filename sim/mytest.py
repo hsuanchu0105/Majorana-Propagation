@@ -152,5 +152,25 @@ coeff_arrays = [
 
 terms = build_canonical_terms(coeff_arrays)
 
+'''
 for idx, coeff in terms.items():
     print(f"indices {idx} -> coefficient {coeff}")
+'''
+# Pauli gates 
+X = np.array([[0, 1], [1, 0]])
+Y = 1j * np.array([[0, -1], [1, 0]])
+Z = np.array([[1, 0], [0, -1]])
+I = np.eye(2)
+
+m1 = np.kron(np.kron(X, I), I)
+m2 = np.kron(np.kron(Y, I), I)
+m3 = np.kron(np.kron(Z, X), I)
+m4 = np.kron(np.kron(Z, Y), I)
+m5 = np.kron(np.kron(Z, Z), X)
+m6 = np.kron(np.kron(Z, Z), Y)
+
+orig = m1 @ m3 @ m5 @ m6
+basis_ch = 0.3586780454497614 * m1 @ m1 @ m5 @ m6 + 0.8483533546735827 * m1 @ m3 @ m5 @ m6 - 0.15164664532641733 * m3 @ m1 @ m5 @ m6 -0.35867804544976145 * m3 @ m3@ m5 @ m6
+diff = basis_ch - orig
+print("diff = ", diff)
+print("diff_norm", np.linalg.norm(diff))

@@ -310,6 +310,7 @@ def BasisChange(N, h, V, dt):
 
     
     R = expm(4 * h * dt)
+    print("R = ", R)
     Rt = np.transpose(R)
     V1 = np.einsum("jklm, jn -> nklm", V, Rt)
     V2 = np.einsum("nklm, ko -> nolm", V1, Rt)
@@ -351,6 +352,15 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 
     for i in range(n):
         V, U = BasisChange(N, h, V, dt) #updating V
+        #print("V_update= ", V)
+        for j in range(6):
+            for k in range(6):
+                for m in range(6):
+                    for l in range(6):
+                        if(V[j][k][m][l]!=0):
+                            print(j, k, m, l, V[j][k][m][l])
+        print("Fermionic gate (V)", U)
+        print("width of gate =", len(U))
         Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U)
 
     return Node_next
@@ -410,7 +420,7 @@ U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 '''
 #'''
 
-a2 = np.array([0, 0, 1, 0, 1, 0])
+a2 = np.array([1, 1, 0, 0, 0, 0])
 M2 = MajoranaOp(6, a2)
 N2 = Node(a2, 1j**M2.rb())
 
@@ -424,8 +434,8 @@ init_maj = [M2]
 #U = [[theta, b]]
 
 
-b1 = np.array([1, 1, 0, 0, 0, 0])
-b2 = np.array([1, 1, 1, 1, 0, 0])
+b1 = np.array([1, 0, 1, 0, 0, 0])
+b2 = np.array([1, 0, 1, 0, 1, 1])
 theta1 = 0.4
 theta2= 0.2
 U = [[theta1, b1], [theta2, b2]]
@@ -439,7 +449,7 @@ rho_st = np.array([0, 0, 0])
 c = np.array([0, 0, 0])
 
 # transform into binary representation |n> = |n_1 n_2 n_3>
-for i in range(1):
+for i in range(8):
     c[0] = i/4
     r1 = i - c[0] * 4
     c[1] = r1/2
@@ -490,7 +500,7 @@ for i in range(2**nf):
 N = 3
 h = np.zeros((2*N, 2*N))
 
-h[1][0] = -1
+h[2][0] = -1
 
 for i in range(nf2):
     for j in range(i+1, 2*N):
@@ -502,7 +512,7 @@ dt = 0.1
 n = 1
 V = np.zeros((2*N, 2*N, 2*N, 2*N))
 
-V[0][1][2][3] = 1
+V[0][2][4][5] = 1
 
 
 rho_st = np.zeros(3)
