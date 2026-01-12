@@ -1,24 +1,23 @@
 from MajProp import * 
 
 
+# initial Majorana 
+a = np.array([1, 1, 0, 0, 0, 0])
+M = MajoranaOp(6, a)
+N = Node(a, 1j**M.rb())
 
-a2 = np.array([1, 1, 0, 0, 0, 0])
-M2 = MajoranaOp(6, a2)
-N2 = Node(a2, 1j**M2.rb())
-
-Init_Node = [N2]
+Init_Node = [N]
 init_len = 1
-init_maj = [M2]
+init_maj = [M]
 
-
+# Fermionic gate
 
 b1 = np.array([1, 0, 1, 0, 0, 0])
-b2 = np.array([1, 0, 1, 0, 1, 1])
 theta1 = 0.4
-theta2= 0.2
-U = [[theta1, b1], [theta2, b2]]
 
+U = [[theta1, b1]]
 trunc_param = np.array([20, 1e-10])
+
 
 
 #print("Fermionic gate:", U)
@@ -37,7 +36,6 @@ for i in range(8):
     for j in range(nf):
         rho_st[j] = c[j]
     #print("input Fock state = ", rho_st)
-    
     Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
     Exp_val = ExpectVal(Output_Node, len(Output_Node) , rho_st)
     print("Expectation value by Majorana Propagation = ", Exp_val)
@@ -49,24 +47,21 @@ N = 3
 h = np.zeros((2*N, 2*N))
 
 h[2][0] = -1
-
 for i in range(nf2):
     for j in range(i+1, 2*N):
         h[i][j] = -h[j][i]
 
+A = np.array([0, 1])
 
 print(h)
-dt = 0.1
-n = 1
-V = np.zeros((2*N, 2*N, 2*N, 2*N))
+t = 0.1
+R = expm(4 * h * t)
+n = np.array([0, 0, 0])
+sum = 0
+for s in range(N):
+    J = [s]
+    Js = [2 * s, 2 * s + 1]
+    Q = R[np.ix_(Js, A)]
+    sum+= np.linalg.det(Q) * 1j * np.prod(1j * (2 * n[J] - 1))
 
-V[0][2][4][5] = 1
-
-
-rho_st = np.zeros(3)
-Node_out = twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param)
-for node in Node_out:
-    print(node)
-
-Exp_val = Rotated_ExpectVal(Node_out , h, rho_st)
-#print("Expectation value by Majorana Propagation = ", Exp_val)
+print("Expectation value after rotation = ", sum)
