@@ -174,3 +174,56 @@ basis_ch = 0.3586780454497614 * m1 @ m1 @ m5 @ m6 + 0.8483533546735827 * m1 @ m3
 diff = basis_ch - orig
 print("diff = ", diff)
 print("diff_norm", np.linalg.norm(diff))
+
+
+"""
+init_len = np.random.randint(1, 5)
+
+maj_bin = []
+for i in range(init_len):
+    b = np.random.randint(0, 2, size=nf2)
+    maj_bin.append(b)
+
+#print(maj_bin)
+
+#Initial Majorana operator
+init_maj =[]
+for i in range(init_len):
+    M = MajoranaOp(len(maj_bin[i]), maj_bin[i])
+    init_maj.append(M)
+
+Init_Node = []
+for i in range(init_len):
+    N = Node(maj_bin[i], 1j**init_maj[i].rb())
+    Init_Node.append(N)
+
+
+U = []
+U_wid = np.random.randint(1, 8)
+for i in range(U_wid):
+    theta = np.random.rand() * 2 * cmath.pi
+    #b = np.array([1,1, 1])
+    #while(sum(b)%2 != 0 or sum(b)== 1):
+    b = np.random.randint(0, 2, size=6)
+    U.append([theta, b])
+
+"""
+'''
+a2 = np.array([1, 0, 1, 0, 0, 0])
+M2 = MajoranaOp(6, a2)
+N2 = Node(a2, 1j**M2.rb())
+
+Init_Node = [N2]
+init_len = 1
+init_maj = [M2]
+
+theta1 = cmath.pi/7
+theta2 = cmath.pi/6
+theta3 = cmath.pi/3
+b1 = np.array([1, 0, 0, 1, 1, 1])
+b2 = np.array([0, 1, 1, 1, 0, 0])
+b3 = np.array([0, 0, 1, 0, 0, 0])
+
+U_wid = 3
+U = [[theta1, b1], [theta2, b2], [theta3, b3]]
+'''

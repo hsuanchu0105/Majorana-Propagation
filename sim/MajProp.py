@@ -48,6 +48,8 @@ class Node:
                 Pair.append(0)
         #print("Pair in the function", Pair)
         return np.array(Pair)
+    def __str__(self):
+        return f"Node(b={self.b}, c={self.c})"
 """
 Majorana Operator 
 """
@@ -103,79 +105,7 @@ def M1Prg(Nin, theta_ex, b_ex):
 
     return c1,  c2 , bout 
 
-"""
-LinkedList for recording Majorana Propagation 
-"""
-class LinkedList:
-    def __init__(self):
-        self.head = None
-        self.len = 0
-    def insertNodeAtPosition(self, newNode, position):
-        if position == 0:
-            newNode.next = self.head
-            self.head =  newNode
-        elif position > 0:    
-            currentNode = self.head
-            for _ in range(position - 1):
-                if currentNode is None:
-                    break
-                currentNode = currentNode.next
-            newNode.next = currentNode.next
-            currentNode.next = newNode
-        self.len +=1 
 
-    def deleteSpecificNode(self, nodeToDelete):
-        if self.head == nodeToDelete:
-            self.head = self.head.next
-
-        else:
-            currentNode = self.head
-            while currentNode.next and currentNode.next != nodeToDelete:
-                currentNode = currentNode.next
-
-            if currentNode.next is None:
-                currentNode = None
-            else:
-                currentNode.next = currentNode.next.next
-        self.len -= 1
-
-    #endIndex exclusive 
-    def getSlice(self, startIndex, endIndex):
-        assert endIndex > startIndex 
-        currentNode = self.head
-        for i in range(startIndex):
-            currentNode = currentNode.next
-        self.head = currentNode
-        for i in range(endIndex - startIndex):
-            currentNode = currentNode.next
-        currentNode = None
-
-        self.len = endIndex - startIndex
-
-    def traverseAndPrint(self):
-        currentNode = self.head
-        while currentNode:
-            print( currentNode.b, ",", f"{currentNode.c.real:.3f}{currentNode.c.imag:+.3f}j", end=" -> ")
-            currentNode = currentNode.next
-        print("null")
-
-    def PrintFrom(self, start, end):
-        currentNode = self.head
-        for i in range(start):
-            currentNode = currentNode.next
-        for i in range(start, end):
-            print( currentNode.b, ",", f"{currentNode.c.real:.3f}{currentNode.c.imag:+.3f}j", end=" -> ")
-            currentNode = currentNode.next
-        print("null")
-
-    def __getitem__(self, position):
-        if(position ==0):
-            return self.head
-        else:
-            currentNode = self.head
-            for i in range(position, 0, -1):
-                currentNode = currentNode.next
-            return currentNode
 
 def Maj_to_mtx(len, MajList):
     mtx = np.zeros( (2 ** nf, 2 ** nf ))
@@ -365,160 +295,16 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 
     return Node_next
 
-
-
-"""
-init_len = np.random.randint(1, 5)
-
-maj_bin = []
-for i in range(init_len):
-    b = np.random.randint(0, 2, size=nf2)
-    maj_bin.append(b)
-
-#print(maj_bin)
-
-#Initial Majorana operator
-init_maj =[]
-for i in range(init_len):
-    M = MajoranaOp(len(maj_bin[i]), maj_bin[i])
-    init_maj.append(M)
-
-Init_Node = []
-for i in range(init_len):
-    N = Node(maj_bin[i], 1j**init_maj[i].rb())
-    Init_Node.append(N)
-
-
-U = []
-U_wid = np.random.randint(1, 8)
-for i in range(U_wid):
-    theta = np.random.rand() * 2 * cmath.pi
-    #b = np.array([1,1, 1])
-    #while(sum(b)%2 != 0 or sum(b)== 1):
-    b = np.random.randint(0, 2, size=6)
-    U.append([theta, b])
-
-"""
-'''
-a2 = np.array([1, 0, 1, 0, 0, 0])
-M2 = MajoranaOp(6, a2)
-N2 = Node(a2, 1j**M2.rb())
-
-Init_Node = [N2]
-init_len = 1
-init_maj = [M2]
-
-theta1 = cmath.pi/7
-theta2 = cmath.pi/6
-theta3 = cmath.pi/3
-b1 = np.array([1, 0, 0, 1, 1, 1])
-b2 = np.array([0, 1, 1, 1, 0, 0])
-b3 = np.array([0, 0, 1, 0, 0, 0])
-
-U_wid = 3
-U = [[theta1, b1], [theta2, b2], [theta3, b3]]
-'''
-#'''
-
-a2 = np.array([1, 1, 0, 0, 0, 0])
-M2 = MajoranaOp(6, a2)
-N2 = Node(a2, 1j**M2.rb())
-
-Init_Node = [N2]
-init_len = 1
-init_maj = [M2]
-
-#U_wid = 1
-#theta = 0.2
-#b = np.array([1, 1, 1, 1, 0, 0])
-#U = [[theta, b]]
-
-
-b1 = np.array([1, 0, 1, 0, 0, 0])
-b2 = np.array([1, 0, 1, 0, 1, 1])
-theta1 = 0.4
-theta2= 0.2
-U = [[theta1, b1], [theta2, b2]]
-
-trunc_param = np.array([20, 1e-10])
-
-
-#print("Fermionic gate:", U)
-#print('\t')
-rho_st = np.array([0, 0, 0])
-c = np.array([0, 0, 0])
-
-# transform into binary representation |n> = |n_1 n_2 n_3>
-for i in range(8):
-    c[0] = i/4
-    r1 = i - c[0] * 4
-    c[1] = r1/2
-    r2 = r1 - c[1] * 2
-    c[2] = r2
+def Rotated_ExpectVal(NodeList, h, rho):
     
-    for j in range(nf):
-        rho_st[j] = c[j]
-    #print("input Fock state = ", rho_st)
-    #MajoranaPropagation(trunc_param, Init_Node, U_wid, U, rho_st)
-    Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
-    Exp_val = ExpectVal(Output_Node, len(Output_Node) , rho_st)
-    print("Expectation value by Majorana Propagation = ", Exp_val)
+    Exp = 0
+    for node in NodeList:
+        if(sum(node.b) % 2 == 0):
+            pass
 
-
-#print("\t")
-
-# direct calculation 
-for i in range(2**nf):
-    test = np.eye(2**nf)[i]
-    rho = np.reshape(test, (2**nf, 1))
-    rhoT = np.transpose(rho)
-
-    #print(rho)
-    
-    H = Maj_to_mtx(init_len, init_maj)
-    #print(H)
-    #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
-    
-    for k in range(len(U)):
-        M = MajoranaOp(len(U[k][1]), U[k][1]) 
-        Mbj = Maj_to_mtx(1, [M])
-        theta = U[k][0]
-        #print(theta)
-        H = expm(1j * theta  *  Mbj/2) @ H @ expm(-1j * theta  *  Mbj/2)
-        #print(H)
-    
-    #print(H)
-    #print("diff ", H - H.conj().T)
-    Expect_dir = np.trace(rho @ rhoT @ H)
-    #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
-
-    print("Expectation value by direct calculation = ", Expect_dir)
-#'''
+    return Exp
 
 
 
-N = 3
-h = np.zeros((2*N, 2*N))
-
-h[2][0] = -1
-
-for i in range(nf2):
-    for j in range(i+1, 2*N):
-        h[i][j] = -h[j][i]
-
-
-print(h)
-dt = 0.1
-n = 1
-V = np.zeros((2*N, 2*N, 2*N, 2*N))
-
-V[0][2][4][5] = 1
-
-
-rho_st = np.zeros(3)
-Node_out = twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param)
-#print(Node_out)
-#Exp_val = Rotated_ExpectVal(Node_out , rho_st)
-#print("Expectation value by Majorana Propagation = ", Exp_val)
 
 
