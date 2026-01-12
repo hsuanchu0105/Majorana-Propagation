@@ -2,9 +2,9 @@ from MajProp import *
 
 
 # initial Majorana 
-a = np.array([1, 1, 0, 0, 0, 0])
-M = MajoranaOp(6, a)
-N = Node(a, 1j**M.rb())
+init_bin = np.array([1, 1, 1, 1, 0, 0])
+M = MajoranaOp(6, init_bin)
+N = Node(init_bin, 1j**M.rb())
 
 Init_Node = [N]
 init_len = 1
@@ -51,17 +51,18 @@ for i in range(nf2):
     for j in range(i+1, 2*N):
         h[i][j] = -h[j][i]
 
-A = np.array([0, 1])
+A = np.nonzero(init_bin)[0] 
 
 print(h)
 t = 0.1
 R = expm(4 * h * t)
 n = np.array([0, 0, 0])
 sum = 0
-for s in range(N):
-    J = [s]
-    Js = [2 * s, 2 * s + 1]
-    Q = R[np.ix_(Js, A)]
-    sum+= np.linalg.det(Q) * 1j * np.prod(1j * (2 * n[J] - 1))
+for s1 in range(N):
+    for s2 in range(s1+1, N):
+        J = [s1, s2]
+        Js = [2 * s1, 2 * s1 + 1, 2 * s2, 2 * s2 +1]
+        Q = R[np.ix_(Js, A)]
+        sum+= np.linalg.det(Q) * np.prod(1j * (2 * n[J] - 1))
 
 print("Expectation value after rotation = ", sum)
