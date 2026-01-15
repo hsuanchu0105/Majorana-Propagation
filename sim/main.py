@@ -63,10 +63,22 @@ V = np.zeros((2*N, 2*N, 2*N, 2*N))
 V[0][2][4][5] = 1
 
 
-rho_st = np.zeros(3)
+rho_st = np.array([0, 0, 1])
 Node_out = twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param)
-for node in Node_out:
-    print(node)
+#for node in Node_out:
+    #print(node)
 
-Exp_val = Rotated_ExpectVal(Node_out , h, rho_st)
-#print("Expectation value by Majorana Propagation = ", Exp_val)
+for i in range(8):
+    c[0] = i/4
+    r1 = i - c[0] * 4
+    c[1] = r1/2
+    r2 = r1 - c[1] * 2
+    c[2] = r2
+    
+    for j in range(nf):
+        rho_st[j] = c[j]
+    #print("input Fock state = ", rho_st)
+    
+
+    Exp_val = Rotated_ExpectVal(Node_out , h, dt, 1, rho_st)
+    print("Expectation value by Rotated Majorana Propagation = ", Exp_val)

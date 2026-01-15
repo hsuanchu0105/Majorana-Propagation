@@ -1,4 +1,5 @@
 from MajProp import * 
+from itertools import combinations
 
 
 # initial Majorana 
@@ -58,11 +59,13 @@ t = 0.1
 R = expm(4 * h * t)
 n = np.array([0, 0, 0])
 sum = 0
-for s1 in range(N):
-    for s2 in range(s1+1, N):
-        J = [s1, s2]
-        Js = [2 * s1, 2 * s1 + 1, 2 * s2, 2 * s2 +1]
-        Q = R[np.ix_(Js, A)]
-        sum+= np.linalg.det(Q) * np.prod(1j * (2 * n[J] - 1))
+
+m = int(np.sum(init_bin)/2)
+#print(m)
+for combo in combinations(list(range(N)), m):
+    J = list(combo)
+    Js = [x for j in J for x in (2*j, 2*j + 1)]
+    Q = R[np.ix_(Js, A)]
+    sum+= np.linalg.det(Q) * np.prod(1j * (2 * n[J] - 1))
 
 print("Expectation value after rotation = ", sum)

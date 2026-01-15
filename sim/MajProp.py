@@ -2,6 +2,7 @@ import cmath
 import numpy as np
 from scipy.linalg import expm
 import functools
+from itertools import combinations
 
 #number of fermionic mode 
 nf = 3
@@ -173,13 +174,13 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     lv_end = len(Nin) 
     current_pos = len(Nin) - 1
 
-    #'''
+    '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
     #print("input length = ", len(Nin))
     for k in range(lv_st, lv_end):
             print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
-    #'''
+    '''
 
     for i in range(L):
         for j in range(lv_st, lv_end):
@@ -219,16 +220,42 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
         #print("length = ", PpgList.len)
         lv_st = lv_end 
         lv_end = current_pos + 1
-        #"""
+        """
         print("Level", i+1, ":")
         for k in range(lv_st, lv_end):
             print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
-        #"""
+        """
 
     Nin = Nin[lv_st: lv_end]
 
     return Nin
 
+def DirectCal(init_len, init_maj, U):
+    for i in range(2**nf):
+        test = np.eye(2**nf)[i]
+        rho = np.reshape(test, (2**nf, 1))
+        rhoT = np.transpose(rho)
+
+        #print(rho)
+        
+        H = Maj_to_mtx(init_len, init_maj)
+        #print(H)
+        #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
+        
+        for k in range(len(U)):
+            M = MajoranaOp(len(U[k][1]), U[k][1]) 
+            Mbj = Maj_to_mtx(1, [M])
+            theta = U[k][0]
+            #print(theta)
+            H = expm(1j * theta  *  Mbj/2) @ H @ expm(-1j * theta  *  Mbj/2)
+            #print(H)
+        
+        #print(H)
+        #print("diff ", H - H.conj().T)
+        Expect_dir = np.trace(rho @ rhoT @ H)
+        #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
+
+        print("Expectation value by direct calculation = ", Expect_dir)
 
 # First change H' into new basis, then write in the form of fermionic gates
 def BasisChange(N, h, V, dt):
@@ -295,14 +322,34 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 
     return Node_next
 
-def Rotated_ExpectVal(NodeList, h, rho):
+def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
     
-    Exp = 0
-    for node in NodeList:
-        if(sum(node.b) % 2 == 0):
-            pass
+    #R0 = expm(2 * h * dt)
+    #R = expm(4 * h * dt)
+    #Rm = R0
+    #for i in range(tstep_num):
+    #    Rm = R @ Rm 
+    #Rm = R0 @ Rm
 
+    Rm = expm(4 * h * dt)
+
+    Exp = 0
+    #'''
+    for node in NodeList:
+        if(np.sum(node.b) % 2 == 0):
+            #print(node)
+            bin = node.b
+            coeff = node.c
+            m = int(np.sum(bin)/2)
+            #print("m=", m)
+            for combo in combinations(list(range(nf)), m):
+                J = list(combo)
+                Js = [x for j in J for x in (2*j, 2*j + 1)]
+                A = np.nonzero(bin)[0] 
+                Q = Rm[np.ix_(Js, A)]
+                Exp+= coeff * np.linalg.det(Q) * np.prod(1j * (2 * rho[J] - 1))
     return Exp
+    #'''
 
 
 
