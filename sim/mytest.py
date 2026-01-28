@@ -227,3 +227,19 @@ b3 = np.array([0, 0, 1, 0, 0, 0])
 U_wid = 3
 U = [[theta1, b1], [theta2, b2], [theta3, b3]]
 '''
+
+
+
+def perm_parity(input):
+    par = 1
+    lenb = np.shape(input)[0]
+    for i in range(1, lenb):
+        for j in range(i):
+            if(input[i]< input[j]):
+                input[i], input[j] = input[j], input[i]
+                par *= -1
+
+    print(input)
+    return par
+
+perm_parity(np.array([1, 6, 3, 4, 5, -1, 2]))

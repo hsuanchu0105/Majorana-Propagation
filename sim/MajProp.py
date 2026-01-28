@@ -257,6 +257,19 @@ def DirectCal(init_len, init_maj, U):
 
         print("Expectation value by direct calculation = ", Expect_dir)
 
+
+def perm_parity(k, l, m, n):
+    par = 1
+    input = np.array([k, l, m, n])
+    for i in range(1, 4):
+        for j in range(i):
+            if(input[i]< input[j]):
+                input[i], input[j] = input[j], input[i]
+                par *= -1
+
+    #print(input)
+    return par
+        
 # First change H' into new basis, then write in the form of fermionic gates
 def BasisChange(N, h, V, dt):
 	# N: number of Fermionic mode
@@ -265,10 +278,13 @@ def BasisChange(N, h, V, dt):
     # dt: time per timestep
 	# output: tensor after contraction with R^T, resulting fermionic gate
 
+
+    # find a way to check the correctness of contraction
     
     R = expm(4 * h * dt)
     print("R = ", R)
     Rt = np.transpose(R)
+    #print(np.allclose(R, np.transpose(R))) # Why do changing R into Rt not change the result?
     V1 = np.einsum("jklm, jn -> nklm", V, Rt)
     V2 = np.einsum("nklm, ko -> nolm", V1, Rt)
     V3 = np.einsum("nolm, lp -> nopm", V2, Rt)
@@ -283,15 +299,20 @@ def BasisChange(N, h, V, dt):
                 for n in range(coef_sh[3]):
                     b = np.zeros(2 * N)
                     if(V4[k][l][m][n] !=0): # maybe apply a threshold for coefficient
-                        theta = V4[k][l][m][n] * dt
-                        b[k] = 1
-                        b[l] = 1
-                        b[m] = 1
-                        b[n] = 1
+                        # WARNING: neglect 2nd trotterization
+                        theta = 2 * V4[k][l][m][n] * dt 
+                        b[k] += 1
+                        b[l] += 1
+                        b[m] += 1
+                        b[n] += 1
+                        for q in range(2 * N):
+                            b[q] = b[q] % 2
+                        
+                        theta = theta * perm_parity(k,l , m, n)
                         U.append([theta, b])
 
-    for i in range(len(U)-1, -1, -1):
-        U.append(U[i])
+    #for i in range(len(U)-1, -1, -1):
+    #    U.append(U[i])
     
 
     return V4, U
@@ -308,12 +329,12 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
     Node_next = Init_Node
 
     for i in range(n):
-        V, U = BasisChange(N, h, V, dt) #updating V
+        V, U = BasisChange(N, h, V, dt) #coefficient in new basis
         #print("V_update= ", V)
-        for j in range(6):
-            for k in range(6):
-                for m in range(6):
-                    for l in range(6):
+        for j in range(nf2):
+            for k in range(nf2):
+                for m in range(nf2):
+                    for l in range(nf2):
                         if(V[j][k][m][l]!=0):
                             print(j, k, m, l, V[j][k][m][l])
         print("Fermionic gate (V)", U)
@@ -337,7 +358,7 @@ def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
     #'''
     for node in NodeList:
         if(np.sum(node.b) % 2 == 0):
-            #print(node)
+            print(node)
             bin = node.b
             coeff = node.c
             m = int(np.sum(bin)/2)
@@ -348,6 +369,9 @@ def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
                 A = np.nonzero(bin)[0] 
                 Q = Rm[np.ix_(Js, A)]
                 Exp+= coeff * np.linalg.det(Q) * np.prod(1j * (2 * rho[J] - 1))
+                contr = coeff * np.linalg.det(Q) * np.prod(1j * (2 * rho[J] - 1))
+                print(Js, A, contr)
+        print('\t')
     return Exp
     #'''
 

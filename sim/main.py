@@ -26,6 +26,11 @@ trunc_param = np.array([20, 1e-10])
 rho_st = np.array([0, 0, 0])
 c = np.array([0, 0, 0])
 
+
+Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
+for node in Output_Node:
+    #pass
+    print(node)
 # transform into binary representation |n> = |n_1 n_2 n_3>
 for i in range(8):
     c[0] = i/4
@@ -38,12 +43,12 @@ for i in range(8):
         rho_st[j] = c[j]
     #print("input Fock state = ", rho_st)
     
-    Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
+    
     Exp_val = ExpectVal(Output_Node, len(Output_Node) , rho_st)
     print("Expectation value by Majorana Propagation = ", Exp_val)
 
 
-
+DirectCal(init_len, init_maj, U)
 
 N = 3
 h = np.zeros((2*N, 2*N))
@@ -63,12 +68,15 @@ V = np.zeros((2*N, 2*N, 2*N, 2*N))
 V[0][2][4][5] = 1
 
 
-rho_st = np.array([0, 0, 1])
+
 Node_out = twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param)
-#for node in Node_out:
+for node in Node_out:
+    pass
     #print(node)
 
-for i in range(8):
+rho_st = np.array([0, 0, 0])
+c = np.array([0, 0, 0])
+for i in range(1):
     c[0] = i/4
     r1 = i - c[0] * 4
     c[1] = r1/2
@@ -79,6 +87,6 @@ for i in range(8):
         rho_st[j] = c[j]
     #print("input Fock state = ", rho_st)
     
-
-    Exp_val = Rotated_ExpectVal(Node_out , h, dt, 1, rho_st)
-    print("Expectation value by Rotated Majorana Propagation = ", Exp_val)
+    
+    rexp = Rotated_ExpectVal(Node_out , h, dt, 1, rho_st)
+    print("Expectation value by Rotated Majorana Propagation = ", rexp)
