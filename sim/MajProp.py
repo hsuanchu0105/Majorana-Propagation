@@ -299,8 +299,8 @@ def BasisChange(N, h, V, dt):
                 for n in range(coef_sh[3]):
                     b = np.zeros(2 * N)
                     if(V4[k][l][m][n] !=0): # maybe apply a threshold for coefficient
-                        # WARNING: neglect 2nd trotterization
-                        theta = 2 * V4[k][l][m][n] * dt 
+                        
+                        theta = V4[k][l][m][n] * dt  #second order trotterization
                         b[k] += 1
                         b[l] += 1
                         b[m] += 1
@@ -311,8 +311,8 @@ def BasisChange(N, h, V, dt):
                         theta = theta * perm_parity(k,l , m, n)
                         U.append([theta, b])
 
-    #for i in range(len(U)-1, -1, -1):
-    #    U.append(U[i])
+    for i in range(len(U)-1, -1, -1):
+        U.append(U[i])
     
 
     return V4, U
