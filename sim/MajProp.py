@@ -358,7 +358,7 @@ def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
     #'''
     for node in NodeList:
         if(np.sum(node.b) % 2 == 0):
-            print(node)
+            #print(node)
             bin = node.b
             coeff = node.c
             m = int(np.sum(bin)/2)
@@ -367,11 +367,11 @@ def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
                 J = list(combo)
                 Js = [x for j in J for x in (2*j, 2*j + 1)]
                 A = np.nonzero(bin)[0] 
-                Q = Rm[np.ix_(Js, A)]
-                Exp+= coeff * np.linalg.det(Q) * np.prod(1j * (2 * rho[J] - 1))
-                contr = coeff * np.linalg.det(Q) * np.prod(1j * (2 * rho[J] - 1))
-                print(Js, A, contr)
-        print('\t')
+                Q = Rm[np.ix_(A, Js)]
+                Exp+= coeff * np.linalg.det(Q) * np.prod(1j * (1 - 2 * rho[J] ))
+                #contr = coeff * np.linalg.det(Q) * np.prod(1j * (1 - 2 * rho[J] ))
+                #print(Js, A, contr)
+        #print('\t')
     return Exp
     #'''
 

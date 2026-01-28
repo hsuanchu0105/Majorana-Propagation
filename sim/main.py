@@ -29,8 +29,8 @@ c = np.array([0, 0, 0])
 
 Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
 for node in Output_Node:
-    #pass
-    print(node)
+    pass
+    #print(node)
 # transform into binary representation |n> = |n_1 n_2 n_3>
 for i in range(8):
     c[0] = i/4
@@ -76,7 +76,7 @@ for node in Node_out:
 
 rho_st = np.array([0, 0, 0])
 c = np.array([0, 0, 0])
-for i in range(1):
+for i in range(8):
     c[0] = i/4
     r1 = i - c[0] * 4
     c[1] = r1/2
