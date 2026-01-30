@@ -8,20 +8,34 @@ from itertools import combinations
 nf = 3
 nf2 = 2 * nf
 
-# Pauli gates 
-X = np.array([[0, 1], [1, 0]])
-Y = 1j * np.array([[0, -1], [1, 0]])
-Z = np.array([[1, 0], [0, -1]])
-I = np.eye(2)
+# Pauli matrices
+X = np.array([[0, 1], [1, 0]], dtype=complex)
+Y = np.array([[0, -1j], [1j, 0]], dtype=complex)
+Z = np.array([[1, 0], [0, -1]], dtype=complex)
+I = np.eye(2, dtype=complex)
 
-m1 = np.kron(np.kron(X, I), I)
-m2 = np.kron(np.kron(Y, I), I)
-m3 = np.kron(np.kron(Z, X), I)
-m4 = np.kron(np.kron(Z, Y), I)
-m5 = np.kron(np.kron(Z, Z), X)
-m6 = np.kron(np.kron(Z, Z), Y)
+def kron_all(ops):
+    """Kronecker product of a list of 2x2 operators, left-to-right."""
+    out = ops[0]
+    for op in ops[1:]:
+        out = np.kron(out, op)
+    return out
 
-Maj_mtx = [m1, m2, m3, m4, m5, m6]
+def majorana_matrices(nf: int):
+    
+    Maj = []
+    for k in range(nf):
+        prefix = [Z] * k
+        suffix = [I] * (nf - k - 1)
+
+        Maj.append(kron_all(prefix + [X] + suffix))  # gamma_{2k}
+        Maj.append(kron_all(prefix + [Y] + suffix))  # gamma_{2k+1}
+    return Maj
+
+
+Maj_mtx = majorana_matrices(nf)
+
+
 
 """
 Node used for Majorana Propagation. Each node contains one binary representation and coefficient (default as 1)
