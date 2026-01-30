@@ -209,9 +209,11 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
                 Nr = Node(bnew, coeff2)
                 Nin.append(Nl)
                 if(sum(bnew) > length_trunc):
-                    print("length truncation")
+                    pass
+                    #print("length truncation")
                 elif(np.abs(coeff2) < coeff_thres):
-                    print("coefficient truncation")
+                    pass
+                    #print("coefficient truncation")
                 else:
                     Nin.append(Nr)
                     current_pos += 1
@@ -271,7 +273,7 @@ def perm_parity(k, l, m, n):
     return par
         
 # First change H' into new basis, then write in the form of fermionic gates
-def BasisChange(N, h, V, dt):
+def BasisChange(N, h, V, dt, bdry):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
@@ -280,8 +282,10 @@ def BasisChange(N, h, V, dt):
 
 
     # find a way to check the correctness of contraction
-    
-    R = expm(4 * h * dt)
+    if(bdry):
+        R = expm(2 * h * dt)
+    else:
+        R = expm(4 * h * dt)
     print("R = ", R)
     Rt = np.transpose(R)
     #print(np.allclose(R, np.transpose(R))) # Why do changing R into Rt not change the result?
@@ -308,7 +312,7 @@ def BasisChange(N, h, V, dt):
                         for q in range(2 * N):
                             b[q] = b[q] % 2
                         
-                        theta = theta * perm_parity(k,l , m, n)
+                        theta = theta * perm_parity(k, l , m, n)
                         U.append([theta, b])
 
     for i in range(len(U)-1, -1, -1):
@@ -328,8 +332,11 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 	
     Node_next = Init_Node
 
+    bdry = False
     for i in range(n):
-        V, U = BasisChange(N, h, V, dt) #coefficient in new basis
+        if(i==0 or i==(n-1)):
+            bdry = True
+        V, U = BasisChange(N, h, V, dt, bdry) #coefficient in new basis
         #print("V_update= ", V)
         for j in range(nf2):
             for k in range(nf2):
@@ -345,14 +352,14 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 
 def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
     
-    #R0 = expm(2 * h * dt)
-    #R = expm(4 * h * dt)
-    #Rm = R0
-    #for i in range(tstep_num):
-    #    Rm = R @ Rm 
-    #Rm = R0 @ Rm
+    R0 = expm(2 * h * dt)
+    R = expm(4 * h * dt)
+    Rm = R0
+    for i in range(tstep_num - 1):
+        Rm = R @ Rm
+    Rm = R0 @ Rm
 
-    Rm = expm(4 * h * dt)
+    #Rm = expm(4 * h * dt)
 
     Exp = 0
     #'''

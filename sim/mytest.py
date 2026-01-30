@@ -226,7 +226,7 @@ b3 = np.array([0, 0, 1, 0, 0, 0])
 
 U_wid = 3
 U = [[theta1, b1], [theta2, b2], [theta3, b3]]
-'''
+
 
 
 
@@ -243,3 +243,34 @@ def perm_parity(input):
     return par
 
 perm_parity(np.array([1, 6, 3, 4, 5, -1, 2]))
+'''
+
+N = 3
+h = np.zeros((6, 6))
+
+h[2][0] = -1
+h[3][1] = 1
+h[2][3]  = -2
+
+h_ind = np.nonzero(h)
+
+nm = len(h_ind[0])
+
+for i in range(nm):
+    print(h_ind[0][i],h_ind[1][i] )
+
+V = np.zeros((2*N, 2*N, 2*N, 2*N))
+V[0][2][4][5] = 1
+V[1][2][3][3] = -1
+V[1][1][3][4] = 3
+
+v_ind = np.nonzero(V)
+nmv = len(v_ind[0])
+
+for i in range(nmv):
+    b2 = np.zeros(2 * N)
+    b2[v_ind[0][i]] = (b2[v_ind[0][i]]+ 1)%2
+    b2[v_ind[1][i]] = (b2[v_ind[1][i]]+ 1)%2
+    b2[v_ind[2][i]] = (b2[v_ind[2][i]]+ 1)%2
+    b2[v_ind[3][i]] = (b2[v_ind[3][i]]+ 1)%2
+    print(b2)
