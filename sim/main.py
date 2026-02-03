@@ -20,7 +20,7 @@ print(h)
 
 V = np.zeros((2*N, 2*N, 2*N, 2*N))
 V[0][2][4][5] = 1
-V[1][3][4][5] = 1
+#V[1][3][4][5] = 1
 
 init_bin = np.array([1, 1, 0, 0, 0, 0])
 M1= MajoranaOp(6, init_bin)
@@ -32,87 +32,22 @@ init_maj = [M1]
 
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
-nm = len(h_ind[0])
-nmv = len(v_ind[0])
+
 
 
 U = []
 
-hcnt = 0
-theta1 = dt 
-for i in range(nm):
-        b1 = np.zeros(2 * N)
-        if(h_ind[0][i] < h_ind[1][i]):
-            b1[h_ind[0][i]] = 1
-            b1[h_ind[1][i]] = 1
-            U.append([theta1, b1])
-            hcnt += 1
 
-cur_pos = len(U)
-for i in range(cur_pos-1, -1, -1):
-    U.append(U[i])
 
+AppendH(U, h_ind, dt, 2)
+
+AppendV(U, v_ind, 2 * dt, 2)
  
-print("free fermion gate count", 2 * hcnt)
+for i in range(n-1):
+    AppendH(U, h_ind, 2 * dt, 2)
+    AppendV(U, v_ind, 2 * dt, 2)
 
-theta2 = dt * 2
-
-for i in range(nmv):
-    b2 = np.zeros(2 * N)
-    b2[v_ind[0][i]] = (b2[v_ind[0][i]]+ 1) % 2
-    b2[v_ind[1][i]] = (b2[v_ind[1][i]]+ 1) % 2
-    b2[v_ind[2][i]] = (b2[v_ind[2][i]]+ 1) % 2
-    b2[v_ind[3][i]] = (b2[v_ind[3][i]]+ 1) % 2
-
-    # parity check? 
-
-    U.append([theta2, b2])
-
-cur_pos = len(U)
-for i in range(cur_pos-1, cur_pos- nmv - 1, -1):
-    U.append(U[i])
-
-print("after first V", len(U))
-
-theta1 = dt * 2  #second order trotterization
-
-for i in range(nm):
-    b1 = np.zeros(2 * N)
-    if(h_ind[0][i] < h_ind[1][i]):
-        b1[h_ind[0][i]] = 1
-        b1[h_ind[1][i]] = 1   
-        U.append([theta1, b1])
-        
-cur_pos = len(U)
-for i in range(cur_pos-1, cur_pos- hcnt - 1, -1):
-    U.append(U[i])
-
-print("after second U", len(U))
-
-ly_end = len(U)
-for ts in range(n-2):
-    for i in range(2 * hcnt, ly_end):
-        U.append(U[i])
-
-theta2 = dt * 2
-
-for i in range(nmv):
-    b2 = np.zeros(2 * N)
-    b2[v_ind[0][i]] = (b2[v_ind[0][i]]+ 1) % 2
-    b2[v_ind[1][i]] = (b2[v_ind[1][i]]+ 1) % 2
-    b2[v_ind[2][i]] = (b2[v_ind[2][i]]+ 1) % 2
-    b2[v_ind[3][i]] = (b2[v_ind[3][i]]+ 1) % 2
-
-    # parity check? 
-
-    U.append([theta2, b2])
-
-cur_pos = len(U)
-for i in range(cur_pos-1, cur_pos- nmv - 1, -1):
-    U.append(U[i])
-
-for i in range(2 * hcnt):
-    U.append(U[i])
+AppendH(U, h_ind, dt, 2)
     
 print("gate count", len(U))
 trunc_param = np.array([20, 1e-10])

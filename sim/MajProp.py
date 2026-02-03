@@ -79,7 +79,39 @@ class MajoranaOp:
         else:
             return 1
     
-        
+def AppendH(U, ind, theta, trott_order):
+
+    if(trott_order == 2):
+        hcnt = 0
+        for i in range(len(ind[0])):
+            b1 = np.zeros(nf2)
+            if(ind[0][i] < ind[1][i]):
+                b1[ind[0][i]] = 1
+                b1[ind[1][i]] = 1
+                U.append([theta, b1])
+                hcnt += 1
+
+        for i in range(len(U)-1, len(U) - hcnt -1, -1):
+            U.append(U[i])     
+
+def AppendV(U, ind, theta, trott_order):
+
+    if(trott_order ==2):
+        for i in range(len(ind[0])):
+            b2 = np.zeros(nf2)
+            b2[ind[0][i]] = (b2[ind[0][i]]+ 1) % 2
+            b2[ind[1][i]] = (b2[ind[1][i]]+ 1) % 2
+            b2[ind[2][i]] = (b2[ind[2][i]]+ 1) % 2
+            b2[ind[3][i]] = (b2[ind[3][i]]+ 1) % 2
+
+        # parity check? 
+
+        U.append([theta, b2])
+
+        cur_pos = len(U)
+        for i in range(cur_pos-1, cur_pos- len(ind[0]) - 1, -1):
+            U.append(U[i])
+
 """
 Majorana Propagation for 1 Fermionic gate
 """
@@ -348,7 +380,7 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 
     bdry = False
     for i in range(n):
-        if(i==0 or i==(n-1)):
+        if(i==0):
             bdry = True
         V, U = BasisChange(N, h, V, dt, bdry) #coefficient in new basis
         #print("V_update= ", V)
