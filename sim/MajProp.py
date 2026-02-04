@@ -306,6 +306,31 @@ def DirectCal(init_len, init_maj, U):
         print("Expectation value by direct calculation = ", Expect_dir)
 
 
+def DirectExp(init_len, init_maj,v,h,t):
+    for i in range(2**nf):
+        test = np.eye(2**nf)[i]
+        rho = np.reshape(test, (2**nf, 1))
+        rhoT = np.transpose(rho)
+
+        F = np.zeros((2**nf, 2**nf), dtype = complex)
+        V = np.zeros((2**nf, 2**nf), dtype = complex)
+        
+        for i in range(nf2):
+            for k in range(i, nf2):
+                F += 2 * 1j * h[i][k] * (Maj_mtx[i] @ Maj_mtx[k])
+        for j in range(nf2):
+            for k in range(nf2):
+                for l in range(nf2):
+                    for m in range(nf2):
+                        V+= v[j][k][l][m] * (Maj_mtx[j] @ Maj_mtx[k] @ Maj_mtx[l]@ Maj_mtx[m])
+        H = Maj_to_mtx(init_len, init_maj)
+        H = expm(1j * (V+F) * t) @ H @ expm(-1j * (V+F) * t)
+
+        Expect_dir = np.trace(rho @ rhoT @ H)
+        #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
+
+        print("Expectation value by direct exponential = ", Expect_dir)
+
 def perm_parity(k, l, m, n):
     par = 1
     input = np.array([k, l, m, n])

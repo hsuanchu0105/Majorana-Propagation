@@ -1,28 +1,29 @@
 from MajProp import * 
 import time 
 
-N = 3
+
 dt = 0.1
 n = 3 #num of timestep
 
 
-h = np.zeros((2*N, 2*N))
+h = np.zeros((nf2, nf2))
 
 h[2][0] = -1
 h[1][0] = -1
-h[3][1] = -1
+h[3][1]= -1
+
 
 for i in range(nf2):
-    for j in range(i+1, 2*N):
+    for j in range(i+1, nf2):
         h[i][j] = -h[j][i]
 
 print(h)
 
 
 
-V = np.zeros((2*N, 2*N, 2*N, 2*N))
+V = np.zeros((nf2, nf2, nf2, nf2))
 #V[0][2][4][5] = 1
-V[1][3][4][5] = 1
+#V[1][3][4][5] = 1
 
 init_bin = np.array([1, 1, 0, 0, 0, 0])
 M1= MajoranaOp(6, init_bin)
@@ -86,11 +87,11 @@ for i in range(8):
 
 
 DirectCal(init_len, init_maj, U)
-
+DirectExp(init_len, init_maj,V,h,n * dt)
 
 
 tic = time.perf_counter()
-Node_out = twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param)
+Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param)
 toc = time.perf_counter()
 print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
