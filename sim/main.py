@@ -9,6 +9,8 @@ n = 3 #num of timestep
 h = np.zeros((2*N, 2*N))
 
 h[2][0] = -1
+h[1][0] = -1
+h[3][1] = -1
 
 for i in range(nf2):
     for j in range(i+1, 2*N):
@@ -19,8 +21,8 @@ print(h)
 
 
 V = np.zeros((2*N, 2*N, 2*N, 2*N))
-V[0][2][4][5] = 1
-#V[1][3][4][5] = 1
+#V[0][2][4][5] = 1
+V[1][3][4][5] = 1
 
 init_bin = np.array([1, 1, 0, 0, 0, 0])
 M1= MajoranaOp(6, init_bin)
@@ -41,11 +43,11 @@ U = []
 
 AppendH(U, h_ind, dt, 2)
 
-AppendV(U, v_ind, 2 * dt, 2)
+AppendV(U, v_ind, dt, 2)
  
 for i in range(n-1):
     AppendH(U, h_ind, 2 * dt, 2)
-    AppendV(U, v_ind, 2 * dt, 2)
+    AppendV(U, v_ind, dt, 2)
 
 AppendH(U, h_ind, dt, 2)
     

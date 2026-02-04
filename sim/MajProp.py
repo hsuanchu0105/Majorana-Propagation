@@ -104,9 +104,9 @@ def AppendV(U, ind, theta, trott_order):
             b2[ind[2][i]] = (b2[ind[2][i]]+ 1) % 2
             b2[ind[3][i]] = (b2[ind[3][i]]+ 1) % 2
 
-        # parity check? 
+            # parity check? 
 
-        U.append([theta, b2])
+            U.append([theta, b2])
 
         cur_pos = len(U)
         for i in range(cur_pos-1, cur_pos- len(ind[0]) - 1, -1):
