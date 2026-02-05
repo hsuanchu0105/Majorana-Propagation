@@ -4,8 +4,9 @@ from scipy.linalg import expm
 import functools
 from itertools import combinations
 
+sn = 5 # number of site 
 #number of fermionic mode 
-nf = 3
+nf = 2 * sn
 nf2 = 2 * nf
 
 # Pauli matrices
@@ -34,6 +35,9 @@ def majorana_matrices(nf: int):
 
 
 Maj_mtx = majorana_matrices(nf)
+
+
+
 
 
 
