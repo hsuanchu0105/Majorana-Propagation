@@ -8,7 +8,7 @@ n = 3 #num of timestep
 
 h = np.zeros((nf2, nf2))
 
-h[2][0] = -1
+h[2][0] = -1 # introduce some randomness here (different values or so)
 h[1][0] = -1
 h[3][1]= -1
 
@@ -17,12 +17,12 @@ for i in range(nf2):
     for j in range(i+1, nf2):
         h[i][j] = -h[j][i]
 
-print(h)
+#print(h)
 
 
 
 V = np.zeros((nf2, nf2, nf2, nf2))
-#V[0][2][4][5] = 1
+V[0][2][4][5] = 1
 #V[1][3][4][5] = 1
 
 init_bin = np.array([1, 1, 0, 0, 0, 0])
@@ -53,7 +53,9 @@ for i in range(n-1):
 AppendH(U, h_ind, dt, 2)
     
 print("gate count", len(U))
-trunc_param = np.array([20, 1e-10])
+
+
+trunc_param = np.array([10, 1e-6])
 
 
 #print("Fermionic gate:", U)
@@ -66,42 +68,22 @@ Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
 toc = time.perf_counter()
 print(f"Majorana Propagation : {toc - tic:0.4f} seconds")
 
-for node in Output_Node:
-    pass
-    #print(node)
-# transform into binary representation |n> = |n_1 n_2 n_3>
-for i in range(8):
-    c[0] = i/4
-    r1 = i - c[0] * 4
-    c[1] = r1/2
-    r2 = r1 - c[1] * 2
-    c[2] = r2
-    
-    for j in range(nf):
-        rho_st[j] = c[j]
-    #print("input Fock state = ", rho_st)
-    
-    
-    Exp_val = ExpectVal(Output_Node, len(Output_Node) , rho_st)
-    print("Expectation value by Majorana Propagation = ", Exp_val)
-
-
-DirectCal(init_len, init_maj, U)
-DirectExp(init_len, init_maj,V,h,n * dt)
-
-
+# Rotated Majorana Propogation
 tic = time.perf_counter()
 Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param)
 toc = time.perf_counter()
 print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
-for node in Node_out:
-    pass
+#for node in Output_Node:
     #print(node)
 
-rho_st = np.array([0, 0, 0])
-c = np.array([0, 0, 0])
-for i in range(8):
+
+# transform into binary representation |n> = |n_1 n_2 n_3>
+obexp = np.zeros(2**nf, dtype = complex)
+rexp = np.zeros(2**nf, dtype = complex)
+dexp = np.zeros(2**nf, dtype = complex)
+
+for i in range(2**nf):
     c[0] = i/4
     r1 = i - c[0] * 4
     c[1] = r1/2
@@ -112,8 +94,42 @@ for i in range(8):
         rho_st[j] = c[j]
     #print("input Fock state = ", rho_st)
     
-    tic = time.perf_counter()
-    rexp = Rotated_ExpectVal(Node_out , h, dt, n, rho_st)
-    toc = time.perf_counter()
-    print(f"Calculate Rotated Expectation value in {toc - tic:0.4f} seconds")
-    print("Expectation value by Rotated Majorana Propagation = ", rexp)
+    
+    obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st)
+    #print("Expectation value by Majorana Propagation = ", obexp[i])
+
+    rexp[i] = Rotated_ExpectVal(Node_out , h, dt, n, rho_st)
+    #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
+
+
+#DirectCal(init_len, init_maj, U)
+DirectExp(dexp, init_len, init_maj, V, h, n * dt)
+
+print('\t')
+print("-----------------Direct exponential---------------")
+print(dexp)
+print("-----------------Majorana Propagation-------------")
+print(obexp)
+print("------------Rotated Majorana Propagation----------")
+print(rexp)
+
+
+
+eps = 1e-15
+rel_maj = np.abs(obexp - dexp) / np.maximum(np.abs(dexp), eps)
+rel_rotm = np.abs(rexp - dexp) / np.maximum(np.abs(dexp), eps)
+
+print('\t')
+print("Relative error Majorana Propagation")
+print(rel_maj)
+
+print("Relative error rotated Majorana")
+print(rel_rotm)
+
+#2-norm 
+rel_ob_global = np.linalg.norm(obexp - dexp) / max(np.linalg.norm(dexp), eps)
+rel_re_global = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
+
+print('\t')
+print("Global relative error")
+print(rel_ob_global, rel_re_global)

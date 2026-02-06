@@ -4,9 +4,9 @@ from scipy.linalg import expm
 import functools
 from itertools import combinations
 
-sn = 5 # number of site 
+#sn = 5 # number of site 
 #number of fermionic mode 
-nf = 2 * sn
+nf = 3
 nf2 = 2 * nf
 
 # Pauli matrices
@@ -310,7 +310,9 @@ def DirectCal(init_len, init_maj, U):
         print("Expectation value by direct calculation = ", Expect_dir)
 
 
-def DirectExp(init_len, init_maj,v,h,t):
+def DirectExp(exp, init_len, init_maj, v, h, t):
+
+    #exp = np.zeros(2**nf, dtype = complex)
     for i in range(2**nf):
         test = np.eye(2**nf)[i]
         rho = np.reshape(test, (2**nf, 1))
@@ -319,9 +321,9 @@ def DirectExp(init_len, init_maj,v,h,t):
         F = np.zeros((2**nf, 2**nf), dtype = complex)
         V = np.zeros((2**nf, 2**nf), dtype = complex)
         
-        for i in range(nf2):
-            for k in range(i, nf2):
-                F += 2 * 1j * h[i][k] * (Maj_mtx[i] @ Maj_mtx[k])
+        for m in range(nf2):
+            for k in range(m, nf2):
+                F += 2 * 1j * h[m][k] * (Maj_mtx[m] @ Maj_mtx[k])
         for j in range(nf2):
             for k in range(nf2):
                 for l in range(nf2):
@@ -330,10 +332,12 @@ def DirectExp(init_len, init_maj,v,h,t):
         H = Maj_to_mtx(init_len, init_maj)
         H = expm(1j * (V+F) * t) @ H @ expm(-1j * (V+F) * t)
 
-        Expect_dir = np.trace(rho @ rhoT @ H)
+        Expect_dir = np.trace(rho @ rhoT @ H, dtype = complex)
         #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
-
-        print("Expectation value by direct exponential = ", Expect_dir)
+        exp[i] = Expect_dir
+        #print("Expectation value by direct exponential = ", Expect_dir)
+    
+    #return exp
 
 def perm_parity(k, l, m, n):
     par = 1
@@ -361,7 +365,7 @@ def BasisChange(N, h, V, dt, bdry):
         R = expm(2 * h * dt)
     else:
         R = expm(4 * h * dt)
-    print("R = ", R)
+    #print("R = ", R)
     Rt = np.transpose(R)
     #print(np.allclose(R, np.transpose(R))) # Why do changing R into Rt not change the result?
     V1 = np.einsum("jklm, jn -> nklm", V, Rt)
@@ -413,14 +417,15 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
             bdry = True
         V, U = BasisChange(N, h, V, dt, bdry) #coefficient in new basis
         #print("V_update= ", V)
-        for j in range(nf2):
-            for k in range(nf2):
-                for m in range(nf2):
-                    for l in range(nf2):
-                        if(V[j][k][m][l]!=0):
-                            print(j, k, m, l, V[j][k][m][l])
-        print("Fermionic gate (V)", U)
-        print("width of gate =", len(U))
+        #for j in range(nf2):
+            #for k in range(nf2):
+                #for m in range(nf2):
+                    #for l in range(nf2):
+                        #if(V[j][k][m][l]!=0):
+                         #   pass
+                            #print(j, k, m, l, V[j][k][m][l])
+        #print("Fermionic gate (V)", U)
+        #print("width of gate =", len(U))
         Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U)
 
     return Node_next

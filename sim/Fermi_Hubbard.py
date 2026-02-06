@@ -17,7 +17,7 @@ for i, j in pairs:
     h[4 * i - 2][4 * j - 4] = 1/2
     # spin down 
     h[4 * i - 3][4 * j - 1] = -1/2
-    h[4 * j - 3][4 * i - 1] = 1/2
+    h[4 * i - 1][4 * j - 3] = 1/2
 
 
 print(np.allclose(h, -h.T, atol=1e-12, rtol=0))
@@ -28,7 +28,7 @@ V = np.zeros((nf2, nf2, nf2, nf2))
 
 
 init_bin = np.array([1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
-M1= MajoranaOp(10, init_bin)
+M1= MajoranaOp(len(init_bin), init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
 
 Init_Node = [N1]
@@ -38,7 +38,7 @@ init_maj = [M1]
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
 
-
+print(h_ind)
 
 U = []
 
@@ -46,7 +46,8 @@ U = []
 
 AppendH(U, h_ind, dt, 2)
 
-AppendV(U, v_ind, dt, 2)
+
+#AppendV(U, v_ind, dt, 2)
  
 for i in range(n-1):
     AppendH(U, h_ind, 2 * dt, 2)
