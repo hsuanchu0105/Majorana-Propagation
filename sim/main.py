@@ -1,7 +1,7 @@
 from MajProp import * 
 import time 
 import matplotlib.pyplot as plt
-
+import os
 
 dt = 0.1
 n = 3 #num of timestep
@@ -55,13 +55,21 @@ AppendH(U, h_ind, dt, 2)
     
 print("gate count", len(U))
 
-tc_st = 3
-tc_end = 7
-rel_mp_global = np.zeros(tc_end - tc_st)
-rel_rot_global = np.zeros(tc_end - tc_st)
-for tc_len in range(tc_st, tc_end):
-    trunc_param = np.array([tc_len, 1e-6])
+#tc_st = 3
+#tc_end = 7
+#rel_mp_global = np.zeros(tc_end - tc_st)
+#rel_rot_global = np.zeros(tc_end - tc_st)
 
+tc_len = 5
+coef_st = -2
+coef_end = -10
+rel_mp_global = np.zeros(coef_st - coef_end)
+rel_rot_global = np.zeros(coef_st - coef_end)
+
+#for tc_len in range(tc_st, tc_end):
+for coef_tr in range(coef_st, coef_end, -1):
+    #trunc_param = np.array([tc_len, 1e-6])
+    trunc_param = np.array([tc_len, 10**(coef_tr)])
 
     #print("Fermionic gate:", U)
     #print('\t')
@@ -112,24 +120,32 @@ for tc_len in range(tc_st, tc_end):
 
     #2-norm 
     eps = 1e-15
-    rel_mp_global[tc_len - tc_st] = np.linalg.norm(obexp - dexp) / max(np.linalg.norm(dexp), eps)
-    rel_rot_global[tc_len - tc_st] = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
-
+    #rel_mp_global[tc_len - tc_st] = np.linalg.norm(obexp - dexp) / max(np.linalg.norm(dexp), eps)
+    #rel_rot_global[tc_len - tc_st] = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
+    rel_mp_global[coef_tr - coef_st] = np.linalg.norm(obexp - dexp) / max(np.linalg.norm(dexp), eps)
+    rel_rot_global[coef_tr - coef_st] = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
 
     
 
 
-tc_len = np.arange(tc_st, tc_end)    
+#tc_len = np.arange(tc_st, tc_end)  
+tc_coeff = np.arange(coef_st, coef_end, -1)
 plt.figure()
-plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
-plt.plot(tc_len, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
+plt.plot(tc_coeff, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
+plt.plot(tc_coeff, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
 
-plt.xlabel('truncation length')
+plt.gca().invert_xaxis()
+#plt.xlabel('truncation length')
+plt.xlabel('truncation coefficient')
 plt.ylabel('relative error (global)')
 #plt.yscale('log')  
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.tight_layout()
+
+
+os.makedirs("plot", exist_ok=True)          # create ./plot if missing
+plt.savefig("plot/lt_5_ct.png", dpi=200, bbox_inches="tight")
 plt.show()
 
 '''

@@ -425,7 +425,7 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
                          #   pass
                             #print(j, k, m, l, V[j][k][m][l])
         #print("Fermionic gate (V)", U)
-        #print("width of gate =", len(U))
+        #print("gate count", len(U))
         Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U)
 
     return Node_next
