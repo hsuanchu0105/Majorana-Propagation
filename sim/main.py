@@ -1,5 +1,6 @@
 from MajProp import * 
 import time 
+import matplotlib.pyplot as plt
 
 
 dt = 0.1
@@ -54,57 +55,84 @@ AppendH(U, h_ind, dt, 2)
     
 print("gate count", len(U))
 
-
-trunc_param = np.array([10, 1e-6])
-
-
-#print("Fermionic gate:", U)
-#print('\t')
-rho_st = np.array([0, 0, 0])
-c = np.array([0, 0, 0])
-
-tic = time.perf_counter()
-Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
-toc = time.perf_counter()
-print(f"Majorana Propagation : {toc - tic:0.4f} seconds")
-
-# Rotated Majorana Propogation
-tic = time.perf_counter()
-Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param)
-toc = time.perf_counter()
-print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
-
-#for node in Output_Node:
-    #print(node)
+tc_st = 3
+tc_end = 7
+rel_mp_global = np.zeros(tc_end - tc_st)
+rel_rot_global = np.zeros(tc_end - tc_st)
+for tc_len in range(tc_st, tc_end):
+    trunc_param = np.array([tc_len, 1e-6])
 
 
-# transform into binary representation |n> = |n_1 n_2 n_3>
-obexp = np.zeros(2**nf, dtype = complex)
-rexp = np.zeros(2**nf, dtype = complex)
-dexp = np.zeros(2**nf, dtype = complex)
+    #print("Fermionic gate:", U)
+    #print('\t')
+    rho_st = np.array([0, 0, 0])
+    c = np.array([0, 0, 0])
 
-for i in range(2**nf):
-    c[0] = i/4
-    r1 = i - c[0] * 4
-    c[1] = r1/2
-    r2 = r1 - c[1] * 2
-    c[2] = r2
+    tic = time.perf_counter()
+    Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
+    toc = time.perf_counter()
+    print(f"Majorana Propagation : {toc - tic:0.4f} seconds")
+
+    # Rotated Majorana Propogation
+    tic = time.perf_counter()
+    Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param)
+    toc = time.perf_counter()
+    print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
+
+    #for node in Output_Node:
+        #print(node)
+
+
+    # transform into binary representation |n> = |n_1 n_2 n_3>
+    obexp = np.zeros(2**nf, dtype = complex)
+    rexp = np.zeros(2**nf, dtype = complex)
+    dexp = np.zeros(2**nf, dtype = complex)
+
+    for i in range(2**nf):
+        c[0] = i/4
+        r1 = i - c[0] * 4
+        c[1] = r1/2
+        r2 = r1 - c[1] * 2
+        c[2] = r2
+        
+        for j in range(nf):
+            rho_st[j] = c[j]
+        #print("input Fock state = ", rho_st)
+        
+        
+        obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st)
+        #print("Expectation value by Majorana Propagation = ", obexp[i])
+
+        rexp[i] = Rotated_ExpectVal(Node_out , h, dt, n, rho_st)
+        #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
+
+
+    #DirectCal(init_len, init_maj, U)
+    DirectExp(dexp, init_len, init_maj, V, h, n * dt)
+
+    #2-norm 
+    eps = 1e-15
+    rel_mp_global[tc_len - tc_st] = np.linalg.norm(obexp - dexp) / max(np.linalg.norm(dexp), eps)
+    rel_rot_global[tc_len - tc_st] = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
+
+
     
-    for j in range(nf):
-        rho_st[j] = c[j]
-    #print("input Fock state = ", rho_st)
-    
-    
-    obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st)
-    #print("Expectation value by Majorana Propagation = ", obexp[i])
-
-    rexp[i] = Rotated_ExpectVal(Node_out , h, dt, n, rho_st)
-    #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
 
-#DirectCal(init_len, init_maj, U)
-DirectExp(dexp, init_len, init_maj, V, h, n * dt)
+tc_len = np.arange(tc_st, tc_end)    
+plt.figure()
+plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
+plt.plot(tc_len, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
 
+plt.xlabel('truncation length')
+plt.ylabel('relative error (global)')
+#plt.yscale('log')  
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+'''
 print('\t')
 print("-----------------Direct exponential---------------")
 print(dexp)
@@ -133,3 +161,4 @@ rel_re_global = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
 print('\t')
 print("Global relative error")
 print(rel_ob_global, rel_re_global)
+'''
