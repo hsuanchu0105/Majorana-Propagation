@@ -90,7 +90,7 @@ for i in range(8):
 
 
 DirectCal(init_len, init_maj, U)
-DirectExp(init_len, init_maj,V,h,n * dt)
+DirectExp(init_len, init_maj, V, h, n * dt)
 
 
 tic = time.perf_counter()

@@ -245,6 +245,20 @@ def perm_parity(input):
 perm_parity(np.array([1, 6, 3, 4, 5, -1, 2]))
 '''
 
+def sparsity(hind,Vind, nf2):
+
+    delta = 0
+    for i in range(nf2):
+        tmp = 0
+        for j in range(2):
+            tmp += np.count_nonzero(hind[j] == i)
+        for j in range(4):
+            tmp += np.count_nonzero(Vind[j] == i)
+        if(tmp > delta):
+            delta = tmp
+    
+    return delta 
+
 N = 3
 h = np.zeros((6, 6))
 
@@ -261,8 +275,8 @@ for i in range(nm):
 
 V = np.zeros((2*N, 2*N, 2*N, 2*N))
 V[0][2][4][5] = 1
-V[1][2][3][3] = -1
-V[1][1][3][4] = 3
+#V[1][2][3][3] = -1
+#V[1][1][3][4] = 3
 
 v_ind = np.nonzero(V)
 nmv = len(v_ind[0])
@@ -274,3 +288,7 @@ for i in range(nmv):
     b2[v_ind[2][i]] = (b2[v_ind[2][i]]+ 1)%2
     b2[v_ind[3][i]] = (b2[v_ind[3][i]]+ 1)%2
     print(b2)
+
+
+delta = sparsity(h_ind,v_ind, 2 * N)
+print(delta)

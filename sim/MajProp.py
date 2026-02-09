@@ -82,6 +82,20 @@ class MajoranaOp:
             return 0
         else:
             return 1
+        
+def sparsity(hind,Vind, nf2):
+# note that we didn't consider V have terms V[i][i][j][k] != 0
+    delta = 0
+    for i in range(nf2):
+        tmp = 0
+        for j in range(2):
+            tmp += np.count_nonzero(hind[j] == i)
+        for j in range(4):
+            tmp += np.count_nonzero(Vind[j] == i)
+        if(tmp > delta):
+            delta = tmp
+    
+    return delta 
     
 def AppendH(U, ind, theta, trott_order):
 
