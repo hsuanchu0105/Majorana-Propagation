@@ -1,7 +1,5 @@
 from MajProp import * 
 import time 
-import matplotlib.pyplot as plt
-import os
 
 
 
@@ -13,7 +11,7 @@ n = 3 #num of timestep
 #number of fermionic mode 
 nf = 3
 nf2 = 2 * nf
-Maj_mtx = majorana_matrices(nf)
+
 
 h = np.zeros((nf2, nf2))
 
@@ -136,28 +134,7 @@ DirectExp(dexp, init_len, init_maj, V, h, n * dt, nf, nf2)
 #rel_rot_global[coef_tr - coef_st] = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
 
     
-'''
 
-#tc_len = np.arange(tc_st, tc_end)  
-tc_coeff = np.arange(coef_st, coef_end, -1)
-plt.figure()
-plt.plot(tc_coeff, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
-plt.plot(tc_coeff, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
-
-plt.gca().invert_xaxis()
-#plt.xlabel('truncation length')
-plt.xlabel('truncation coefficient')
-plt.ylabel('relative error (global)')
-#plt.yscale('log')  
-plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-plt.legend()
-plt.tight_layout()
-
-
-os.makedirs("plot", exist_ok=True)          # create ./plot if missing
-plt.savefig("plot/lt_5_ct.png", dpi=200, bbox_inches="tight")
-plt.show()
-'''
 
 #'''
 print('\t')

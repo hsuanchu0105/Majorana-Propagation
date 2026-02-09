@@ -3,6 +3,8 @@ import numpy as np
 from scipy.linalg import expm
 import functools
 from itertools import combinations
+import matplotlib.pyplot as plt
+import os
 
 
 # Pauli matrices
@@ -469,6 +471,40 @@ def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho, nf):
     #'''
 
 
+def coefftrunc_plot(coef_st, coef_end,rel_mp_global, rel_rot_global, filename):
+     
+    tc_coeff = np.arange(coef_st, coef_end, -1)
+    plt.figure()
+    plt.plot(tc_coeff, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
+    plt.plot(tc_coeff, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
+
+    plt.gca().invert_xaxis()
+    plt.xlabel('truncation coefficient order')
+    plt.ylabel('relative error (global)')
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.legend()
+    plt.tight_layout()
 
 
+    os.makedirs("plot", exist_ok=True)          # create ./plot if missing
+    plt.savefig(os.path.join("plot", filename), dpi=200, bbox_inches="tight")
+    plt.show()
+def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
+    tc_len = np.arange(tc_st, tc_end)  
+    plt.figure()
+    plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
+    plt.plot(tc_len, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
+
+    
+    plt.xlabel('truncation length')
+    plt.ylabel('relative error (global)')
+    #plt.yscale('log')  
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.legend()
+    plt.tight_layout()
+
+
+    os.makedirs("plot", exist_ok=True)          # create ./plot if missing
+    plt.savefig(os.path.join("plot", filename), dpi=200, bbox_inches="tight")
+    plt.show()
 
