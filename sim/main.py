@@ -3,9 +3,17 @@ import time
 import matplotlib.pyplot as plt
 import os
 
+
+
+
+
 dt = 0.1
 n = 3 #num of timestep
 
+#number of fermionic mode 
+nf = 3
+nf2 = 2 * nf
+Maj_mtx = majorana_matrices(nf)
 
 h = np.zeros((nf2, nf2))
 
@@ -38,20 +46,19 @@ h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
 
 
-
 U = []
 
 
 
-AppendH(U, h_ind, dt, 2)
+AppendH(U, h_ind, dt, 2, nf2)
 
-AppendV(U, v_ind, dt, 2)
+AppendV(U, v_ind, dt, 2, nf2)
  
 for i in range(n-1):
-    AppendH(U, h_ind, 2 * dt, 2)
-    AppendV(U, v_ind, dt, 2)
+    AppendH(U, h_ind, 2 * dt, 2, nf2)
+    AppendV(U, v_ind, dt, 2, nf2)
 
-AppendH(U, h_ind, dt, 2)
+AppendH(U, h_ind, dt, 2, nf2)
     
 print("gate count", len(U))
 
@@ -113,13 +120,13 @@ for i in range(2**nf):
     obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st)
     #print("Expectation value by Majorana Propagation = ", obexp[i])
 
-    rexp[i] = Rotated_ExpectVal(Node_out , h, dt, n, rho_st)
+    rexp[i] = Rotated_ExpectVal(Node_out , h, dt, n, rho_st, nf)
     #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
 
     #DirectCal(init_len, init_maj, U)
 
-DirectExp(dexp, init_len, init_maj, V, h, n * dt)
+DirectExp(dexp, init_len, init_maj, V, h, n * dt, nf, nf2)
 
 #2-norm 
 #eps = 1e-15

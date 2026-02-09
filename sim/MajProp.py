@@ -4,10 +4,6 @@ from scipy.linalg import expm
 import functools
 from itertools import combinations
 
-#sn = 5 # number of site 
-#number of fermionic mode 
-nf = 3
-nf2 = 2 * nf
 
 # Pauli matrices
 X = np.array([[0, 1], [1, 0]], dtype=complex)
@@ -22,7 +18,7 @@ def kron_all(ops):
         out = np.kron(out, op)
     return out
 
-def majorana_matrices(nf: int):
+def majorana_matrices(nf):
     
     Maj = []
     for k in range(nf):
@@ -32,12 +28,6 @@ def majorana_matrices(nf: int):
         Maj.append(kron_all(prefix + [X] + suffix))  # gamma_{2k}
         Maj.append(kron_all(prefix + [Y] + suffix))  # gamma_{2k+1}
     return Maj
-
-
-Maj_mtx = majorana_matrices(nf)
-
-
-
 
 
 
@@ -97,7 +87,7 @@ def sparsity(hind,Vind, nf2):
     
     return delta 
     
-def AppendH(U, ind, theta, trott_order):
+def AppendH(U, ind, theta, trott_order, nf2):
 
     if(trott_order == 2):
         hcnt = 0
@@ -112,7 +102,7 @@ def AppendH(U, ind, theta, trott_order):
         for i in range(len(U)-1, len(U) - hcnt -1, -1):
             U.append(U[i])     
 
-def AppendV(U, ind, theta, trott_order):
+def AppendV(U, ind, theta, trott_order, nf2):
 
     if(trott_order ==2):
         for i in range(len(ind[0])):
@@ -172,7 +162,8 @@ def M1Prg(Nin, theta_ex, b_ex):
 
 
 
-def Maj_to_mtx(len, MajList):
+def Maj_to_mtx(len, MajList, nf):
+    Maj_mtx = majorana_matrices(nf)
     mtx = np.zeros( (2 ** nf, 2 ** nf ))
 
     for i in range(len):
@@ -296,7 +287,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
 
     return Nin
 
-def DirectCal(init_len, init_maj, U):
+def DirectCal(init_len, init_maj, U, nf):
     for i in range(2**nf):
         test = np.eye(2**nf)[i]
         rho = np.reshape(test, (2**nf, 1))
@@ -324,8 +315,9 @@ def DirectCal(init_len, init_maj, U):
         print("Expectation value by direct calculation = ", Expect_dir)
 
 
-def DirectExp(exp, init_len, init_maj, v, h, t):
+def DirectExp(exp, init_len, init_maj, v, h, t, nf, nf2):
 
+    Maj_mtx = majorana_matrices(nf)
     #exp = np.zeros(2**nf, dtype = complex)
     for i in range(2**nf):
         test = np.eye(2**nf)[i]
@@ -343,7 +335,7 @@ def DirectExp(exp, init_len, init_maj, v, h, t):
                 for l in range(nf2):
                     for m in range(nf2):
                         V+= v[j][k][l][m] * (Maj_mtx[j] @ Maj_mtx[k] @ Maj_mtx[l]@ Maj_mtx[m])
-        H = Maj_to_mtx(init_len, init_maj)
+        H = Maj_to_mtx(init_len, init_maj, nf)
         H = expm(1j * (V+F) * t) @ H @ expm(-1j * (V+F) * t)
 
         Expect_dir = np.trace(rho @ rhoT @ H, dtype = complex)
@@ -444,7 +436,7 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
 
     return Node_next
 
-def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho):
+def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho, nf):
     
     R0 = expm(2 * h * dt)
     R = expm(4 * h * dt)
