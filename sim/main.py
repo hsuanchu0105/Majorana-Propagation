@@ -17,7 +17,9 @@ h = np.zeros((nf2, nf2))
 
 h[2][0] = -0.1 # introduce some randomness here (different values or so)
 h[1][0] = -0.1
-h[5][1]= -0.1
+h[3][1] = -0.2
+#h[3][2] = -0.2
+#h[5][1]= -0.1
 
 
 for i in range(nf2):
@@ -31,21 +33,31 @@ for i in range(nf2):
 V = np.zeros((nf2, nf2, nf2, nf2))
 V[0][2][4][5] = 0.5
 V[1][3][4][5] = 0.1
-V[0][1][4][6] = 0.1
-V[0][1][6][7] = 0.1
+#V[0][1][3][4] = -0.3
+#V[0][1][4][6] = 0.1
+#V[0][1][6][7] = 0.1
 
 init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
 #init_bin = np.array([1, 1, 0, 0, 0, 0])
 M1= MajoranaOp(nf2, init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
-bin2 = np.array([1, 0, 1, 0, 0, 0, 0, 0])
+
+bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1])
 #bin2 = np.array([1, 0, 1, 0, 0, 0])
 M2= MajoranaOp(nf2, bin2)
 N2 = Node(bin2, 1j**M2.rb())
 
-Init_Node = [N1, N2]
-init_len = 2
-init_maj = [M1, M2]
+bin3 = np.array([1, 0, 1, 0, 1, 0, 1, 0])
+M3= MajoranaOp(nf2, bin3)
+N3 = Node(bin3, 1j**M3.rb())
+
+bin4 = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+M4= MajoranaOp(nf2, bin4)
+N4 = Node(bin4, 1j**M4.rb())
+
+Init_Node = [N1, N2, N3, N4]
+init_len = len(Init_Node)
+init_maj = [M1, M2, M3, M4]
 
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
