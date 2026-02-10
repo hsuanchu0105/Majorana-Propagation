@@ -75,7 +75,7 @@ class MajoranaOp:
         else:
             return 1
         
-def sparsity(hind,Vind, nf2):
+def sparsity(hind, Vind, nf2):
 # note that we didn't consider V have terms V[i][i][j][k] != 0
     delta = 0
     for i in range(nf2):
@@ -194,7 +194,8 @@ def ExpectVal(Input_Node, lenN, rho):
                 
     
 # tranform observable in Majorana form into matrix form 
-def ObsToMtx(Input_Node, lenN, N):
+def ObsToMtx(Input_Node, lenN, N, nf):
+    Maj_mtx = majorana_matrices(nf)
     mtx = np.zeros((2**N, 2**N), dtype = complex)
     for i in range(lenN):   
         bin = Input_Node[i].b
@@ -218,10 +219,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     length_trunc = trunc[0]
     coeff_thres = trunc[1]
 
-    # initial Majorana operator
-    #PpgList = LinkedList()
-    #for i in range(len(Nin)):
-    #    PpgList.insertNodeAtPosition(Nin[i], i)
+    
     Nin = list(Nin) #shallow copy
     # parameters of Fermionic circuit U
     L = lenU                   
@@ -289,32 +287,6 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
 
     return Nin
 
-def DirectCal(init_len, init_maj, U, nf):
-    for i in range(2**nf):
-        test = np.eye(2**nf)[i]
-        rho = np.reshape(test, (2**nf, 1))
-        rhoT = np.transpose(rho)
-
-        #print(rho)
-        
-        H = Maj_to_mtx(init_len, init_maj)
-        #print(H)
-        #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
-        
-        for k in range(len(U)):
-            M = MajoranaOp(len(U[k][1]), U[k][1]) 
-            Mbj = Maj_to_mtx(1, [M])
-            theta = U[k][0]
-            #print(theta)
-            H = expm(1j * theta  *  Mbj/2) @ H @ expm(-1j * theta  *  Mbj/2)
-            #print(H)
-        
-        #print(H)
-        #print("diff ", H - H.conj().T)
-        Expect_dir = np.trace(rho @ rhoT @ H)
-        #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
-
-        print("Expectation value by direct calculation = ", Expect_dir)
 
 
 def DirectExp(exp, init_len, init_maj, v, h, t, nf, nf2):
@@ -346,6 +318,8 @@ def DirectExp(exp, init_len, init_maj, v, h, t, nf, nf2):
         #print("Expectation value by direct exponential = ", Expect_dir)
     
     #return exp
+
+
 
 def perm_parity(k, l, m, n):
     par = 1

@@ -5,8 +5,8 @@ import time
 
 
 
-dt = 0.1
-n = 3 #num of timestep
+dt = 0.01
+n = 10 #num of timestep
 
 #number of fermionic mode 
 nf = 3
@@ -15,7 +15,7 @@ nf2 = 2 * nf
 
 h = np.zeros((nf2, nf2))
 
-h[2][0] = -1 # introduce some randomness here (different values or so)
+h[2][0] = -0.1 # introduce some randomness here (different values or so)
 #h[1][0] = -1
 #h[3][1]= -1
 
@@ -29,8 +29,8 @@ for i in range(nf2):
 
 
 V = np.zeros((nf2, nf2, nf2, nf2))
-V[0][2][4][5] = 8
-#V[1][3][4][5] = 1
+V[0][2][4][5] = 0.8
+V[1][3][4][5] = 1
 
 init_bin = np.array([1, 1, 0, 0, 0, 0])
 M1= MajoranaOp(6, init_bin)
@@ -46,7 +46,8 @@ v_ind = np.nonzero(V)
 
 U = []
 
-
+sps = sparsity(h_ind, v_ind, nf2)
+print("Delta = ", sps)
 
 AppendH(U, h_ind, dt, 2, nf2)
 
@@ -89,15 +90,18 @@ toc = time.perf_counter()
 print(f"Majorana Propagation : {toc - tic:0.4f} seconds")
 
 # Rotated Majorana Propogation
-tic = time.perf_counter()
+#tic = time.perf_counter()
 Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param)
-toc = time.perf_counter()
-print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
+#toc = time.perf_counter()
+#print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
 #for node in Output_Node:
     #print(node)
 
 
+
+
+#'''
 # transform into binary representation |n> = |n_1 n_2 n_3>
 obexp = np.zeros(2**nf, dtype = complex)
 rexp = np.zeros(2**nf, dtype = complex)
@@ -122,8 +126,6 @@ for i in range(2**nf):
     #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
 
-    #DirectCal(init_len, init_maj, U)
-
 DirectExp(dexp, init_len, init_maj, V, h, n * dt, nf, nf2)
 
 #2-norm 
@@ -136,7 +138,7 @@ DirectExp(dexp, init_len, init_maj, V, h, n * dt, nf, nf2)
     
 
 
-#'''
+
 print('\t')
 print("-----------------Direct exponential---------------")
 print(dexp)
@@ -148,8 +150,8 @@ print(rexp)
 
 
 eps = 1e-15
-rel_maj = np.abs(obexp - dexp) / np.maximum(np.abs(dexp), eps)
-rel_rotm = np.abs(rexp - dexp) / np.maximum(np.abs(dexp), eps)
+rel_maj = np.abs(obexp - dexp) / np.abs(dexp)
+rel_rotm = np.abs(rexp - dexp) / np.abs(dexp)
 
 print('\t')
 print("Relative error Majorana Propagation")
@@ -159,8 +161,8 @@ print("Relative error rotated Majorana")
 print(rel_rotm)
 
 #2-norm 
-rel_ob_global = np.linalg.norm(obexp - dexp) / max(np.linalg.norm(dexp), eps)
-rel_re_global = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
+rel_ob_global = np.linalg.norm(obexp - dexp) / np.linalg.norm(dexp)
+rel_re_global = np.linalg.norm(rexp - dexp) / np.linalg.norm(dexp)
 
 print('\t')
 print("Global relative error")
