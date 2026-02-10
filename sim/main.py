@@ -6,18 +6,18 @@ import time
 
 
 dt = 0.01
-n = 5 #num of timestep
+n = 3 #num of timestep
 
 #number of fermionic mode 
-nf = 3
+nf = 4
 nf2 = 2 * nf
 
 
 h = np.zeros((nf2, nf2))
 
 h[2][0] = -0.1 # introduce some randomness here (different values or so)
-h[1][0] = -1
-#h[3][1]= -1
+h[1][0] = -0.1
+h[5][1]= -0.1
 
 
 for i in range(nf2):
@@ -29,16 +29,23 @@ for i in range(nf2):
 
 
 V = np.zeros((nf2, nf2, nf2, nf2))
-V[0][2][4][5] = 0.8
-V[1][3][4][5] = 1
+V[0][2][4][5] = 0.5
+V[1][3][4][5] = 0.1
+V[0][1][4][6] = 0.1
+V[0][1][6][7] = 0.1
 
-init_bin = np.array([1, 1, 0, 0, 0, 0])
-M1= MajoranaOp(6, init_bin)
+init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
+#init_bin = np.array([1, 1, 0, 0, 0, 0])
+M1= MajoranaOp(nf2, init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
+bin2 = np.array([1, 0, 1, 0, 0, 0, 0, 0])
+#bin2 = np.array([1, 0, 1, 0, 0, 0])
+M2= MajoranaOp(nf2, bin2)
+N2 = Node(bin2, 1j**M2.rb())
 
-Init_Node = [N1]
-init_len = 1
-init_maj = [M1]
+Init_Node = [N1, N2]
+init_len = 2
+init_maj = [M1, M2]
 
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
@@ -81,8 +88,8 @@ for tc_len in range(tc_st, tc_end):
 
     #print("Fermionic gate:", U)
     #print('\t')
-    rho_st = np.array([0, 0, 0])
-    c = np.array([0, 0, 0])
+    rho_st = np.zeros(nf, dtype = int)
+    c = np.zeros(nf, dtype = int)
 
     tic = time.perf_counter()
     Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
@@ -95,22 +102,22 @@ for tc_len in range(tc_st, tc_end):
     #toc = time.perf_counter()
     #print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
-    #for node in Output_Node:
+    for node in Output_Node:
         #print(node)
+        pass
 
 
     obexp = np.zeros(2**nf, dtype = complex)
     rexp = np.zeros(2**nf, dtype = complex)
     dexp = np.zeros(2**nf, dtype = complex)
 
-    # transform into binary representation |n> = |n_1 n_2 n_3>
+    # transform into binary representation |n> = |n_1 n_2 n_3 \cdots n_{nf} >
     for i in range(2**nf):
-        c[0] = i/4
-        r1 = i - c[0] * 4
-        c[1] = r1/2
-        r2 = r1 - c[1] * 2
-        c[2] = r2
-        
+        rem = i
+        for j in range(nf):
+            c[j] = rem / 2**(nf - j - 1)
+            rem = rem - c[j] * 2**(nf - j - 1)
+
         for j in range(nf):
             rho_st[j] = c[j]
         #print("input Fock state = ", rho_st)
@@ -133,6 +140,12 @@ for tc_len in range(tc_st, tc_end):
     #rel_rot_global[coef_tr - coef_st] = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)
     ErrorPrint(dexp, obexp, rexp, 2)
 
-filename = "test.png"
+
+# truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
+trunc_met = "lt"
+#note = "_0.1_0.1_0.7"
+filename =  trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V))  + ".png"
+
+#filename = "N=6test.png"
 lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename)
 
