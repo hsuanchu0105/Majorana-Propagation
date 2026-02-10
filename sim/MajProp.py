@@ -81,7 +81,7 @@ def sparsity(hind, Vind, nf2):
     for i in range(nf2):
         tmp = 0
         for j in range(2):
-            tmp += np.count_nonzero(hind[j] == i)
+            tmp += np.count_nonzero(hind[j] == i)/2 #symmetric
         for j in range(4):
             tmp += np.count_nonzero(Vind[j] == i)
         if(tmp > delta):
@@ -313,7 +313,6 @@ def DirectExp(exp, init_len, init_maj, v, h, t, nf, nf2):
         H = expm(1j * (V+F) * t) @ H @ expm(-1j * (V+F) * t)
 
         Expect_dir = np.trace(rho @ rhoT @ H, dtype = complex)
-        #Expect_dir = np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2) @ Mb @ expm(-1j * theta  *  Mbj/2) ) + np.trace(rho @ rhoT @  expm(1j * theta  *  Mbj/2)  @ Mc @ expm(-1j * theta * Mbj/2))
         exp[i] = Expect_dir
         #print("Expectation value by direct exponential = ", Expect_dir)
     
@@ -404,7 +403,6 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
                 #for m in range(nf2):
                     #for l in range(nf2):
                         #if(V[j][k][m][l]!=0):
-                         #   pass
                             #print(j, k, m, l, V[j][k][m][l])
         #print("Fermionic gate (V)", U)
         #print("gate count", len(U))
@@ -463,6 +461,7 @@ def coefftrunc_plot(coef_st, coef_end,rel_mp_global, rel_rot_global, filename):
     os.makedirs("plot", exist_ok=True)          # create ./plot if missing
     plt.savefig(os.path.join("plot", filename), dpi=200, bbox_inches="tight")
     plt.show()
+
 def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
     tc_len = np.arange(tc_st, tc_end)  
     plt.figure()
@@ -472,7 +471,7 @@ def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
     
     plt.xlabel('truncation length')
     plt.ylabel('relative error (global)')
-    #plt.yscale('log')  
+    plt.yscale('log')  
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.legend()
     plt.tight_layout()
@@ -482,3 +481,32 @@ def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
     plt.savefig(os.path.join("plot", filename), dpi=200, bbox_inches="tight")
     plt.show()
 
+def ErrorPrint(_dexp, _obexp, _rexp, _ord):
+    print('\t')
+    print("-----------------Direct exponential---------------")
+    print(_dexp)
+    print("-----------------Majorana Propagation-------------")
+    print(_obexp)
+    print("------------Rotated Majorana Propagation----------")
+    print(_rexp)
+
+
+
+    #eps = 1e-15
+    rel_maj = np.abs(_obexp - _dexp) / np.abs(_dexp)
+    rel_rotm = np.abs(_rexp - _dexp) / np.abs(_dexp)
+
+    print('\t')
+    print("Relative error Majorana Propagation")
+    print(rel_maj)
+
+    print("Relative error rotated Majorana")
+    print(rel_rotm)
+
+    #2-norm 
+    rel_ob_global = np.linalg.norm(_obexp - _dexp, ord = _ord) / np.linalg.norm(_dexp, ord = _ord)
+    rel_re_global = np.linalg.norm(_rexp - _dexp, ord = _ord) / np.linalg.norm(_dexp, ord = _ord)
+
+    print('\t')
+    print("Global relative error")
+    print(rel_ob_global, rel_re_global)
