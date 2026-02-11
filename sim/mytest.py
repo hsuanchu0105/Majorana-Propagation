@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.linalg import expm
 from collections import defaultdict
+import matplotlib.pyplot as plt
 
 
 
@@ -292,3 +293,5 @@ for i in range(nmv):
 
 delta = sparsity(h_ind,v_ind, 2 * N)
 print(delta)
+
+

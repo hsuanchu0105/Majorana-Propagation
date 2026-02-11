@@ -17,7 +17,7 @@ h = np.zeros((nf2, nf2))
 
 h[2][0] = -0.1 # introduce some randomness here (different values or so)
 h[1][0] = -0.1
-h[3][1] = -0.2
+h[5][1] = -0.2
 #h[3][2] = -0.2
 #h[5][1]= -0.1
 
@@ -150,8 +150,9 @@ for tc_len in range(tc_st, tc_end):
     Trotterization(dexp, init_len, init_maj, U, nf)
 
     # 2-norm 
-    #eps = 1e-15
-    rel_mp_global[tc_len - tc_st] = np.linalg.norm(obexp - dexp) / np.linalg.norm(dexp)
+    
+    #rel_mp_global[tc_len - tc_st] = np.linalg.norm(obexp - dexp) / np.linalg.norm(dexp)
+    rel_mp_global[tc_len - tc_st] = np.linalg.norm(obexp - dexp) 
     rel_rot_global[tc_len - tc_st] = np.linalg.norm(rexp - dexp) / np.linalg.norm(dexp)
     #rel_mp_global[coef_tr - coef_st] = np.linalg.norm(obexp - dexp) / max(np.linalg.norm(dexp), eps)
     #rel_rot_global[coef_tr - coef_st] = np.linalg.norm(rexp - dexp) / max(np.linalg.norm(dexp), eps)

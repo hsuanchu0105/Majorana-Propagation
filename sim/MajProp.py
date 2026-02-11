@@ -490,12 +490,15 @@ def coefftrunc_plot(coef_st, coef_end,rel_mp_global, rel_rot_global, filename):
 def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
     tc_len = np.arange(tc_st, tc_end)  
     plt.figure()
-    plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
-    plt.plot(tc_len, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
+    plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-')
+    #plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
+    #plt.plot(tc_len, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
 
     
-    plt.xlabel('truncation length')
-    plt.ylabel('relative error (global)')
+    #plt.xlabel('truncation length')
+    plt.xlabel(r'maximal degree $\ell$')
+    #plt.ylabel('relative error (global)')
+    plt.ylabel(r'$\left\|O^{\ell}_{\mathrm{MP}} - O_{\mathrm{trott}}\right\|_{2}$')
     plt.yscale('log')  
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.legend()
