@@ -292,7 +292,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
 def DirectExp(exp, init_len, init_maj, v, h, t, nf, nf2):
 
     Maj_mtx = majorana_matrices(nf)
-    #exp = np.zeros(2**nf, dtype = complex)
+    
     for i in range(2**nf):
         test = np.eye(2**nf)[i]
         rho = np.reshape(test, (2**nf, 1))
@@ -316,8 +316,33 @@ def DirectExp(exp, init_len, init_maj, v, h, t, nf, nf2):
         exp[i] = Expect_dir
         #print("Expectation value by direct exponential = ", Expect_dir)
     
-    #return exp
 
+
+def Trotterization(exp, init_len, init_maj, U, nf):
+
+    for i in range(2**nf):
+        test = np.eye(2**nf)[i]
+        rho = np.reshape(test, (2**nf, 1))
+        rhoT = np.transpose(rho)
+
+        #print(rho)
+        
+        H = Maj_to_mtx(init_len, init_maj, nf)
+        #print(H)
+        #Expect_dir = np.cos(theta) * np.trace(rho @ rhoT @ Mb) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mb) + np.cos(theta) * np.trace(rho @ rhoT @ Mc) + np.sin(theta) * 1j * np.trace(rho @ rhoT @ Mbj @ Mc)
+        
+        for k in range(len(U)):
+            M = MajoranaOp(len(U[k][1]), U[k][1]) 
+            Mbj = Maj_to_mtx(1, [M], nf)
+            theta = U[k][0]
+            #print(theta)
+            H = expm(1j * theta  *  Mbj/2) @ H @ expm(-1j * theta  *  Mbj/2)
+            #print(H)
+        
+        #print(H)
+        #print("diff ", H - H.conj().T)
+        Expect_dir = np.trace(rho @ rhoT @ H)
+        exp[i] = Expect_dir
 
 
 def perm_parity(k, l, m, n):
@@ -458,8 +483,8 @@ def coefftrunc_plot(coef_st, coef_end,rel_mp_global, rel_rot_global, filename):
     plt.tight_layout()
 
 
-    os.makedirs("plot", exist_ok=True)          # create ./plot if missing
-    plt.savefig(os.path.join("plot", filename), dpi=200, bbox_inches="tight")
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    plt.savefig(filename, dpi=200, bbox_inches="tight")
     plt.show()
 
 def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
@@ -477,8 +502,8 @@ def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
     plt.tight_layout()
 
 
-    os.makedirs("plot", exist_ok=True)          # create ./plot if missing
-    plt.savefig(os.path.join("plot", filename), dpi=200, bbox_inches="tight")
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    plt.savefig(filename, dpi=200, bbox_inches="tight")
     plt.show()
 
 def ErrorPrint(_dexp, _obexp, _rexp, _ord):

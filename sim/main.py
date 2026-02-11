@@ -6,10 +6,10 @@ import time
 
 
 dt = 0.01
-n = 3 #num of timestep
+n = 10 #num of timestep
 
 #number of fermionic mode 
-nf = 4
+nf = 3
 nf2 = 2 * nf
 
 
@@ -31,33 +31,36 @@ for i in range(nf2):
 
 
 V = np.zeros((nf2, nf2, nf2, nf2))
-V[0][2][4][5] = 0.5
-V[1][3][4][5] = 0.1
+#V[0][1][2][3] = 0.5
+#V[1][2][3][4] = 0.5
+#V[2][3][4][5] = 0.5
+#V[1][3][4][5] = 0.1
 #V[0][1][3][4] = -0.3
 #V[0][1][4][6] = 0.1
 #V[0][1][6][7] = 0.1
 
-init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
-#init_bin = np.array([1, 1, 0, 0, 0, 0])
+#init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
+init_bin = np.array([1, 1, 0, 0, 1, 1])
 M1= MajoranaOp(nf2, init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
 
-bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1])
-#bin2 = np.array([1, 0, 1, 0, 0, 0])
+#bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1])
+bin2 = np.array([0, 0, 1, 1, 0, 0])
 M2= MajoranaOp(nf2, bin2)
 N2 = Node(bin2, 1j**M2.rb())
 
-bin3 = np.array([1, 0, 1, 0, 1, 0, 1, 0])
+#bin3 = np.array([1, 0, 1, 0, 1, 0, 1, 0])
+bin3 = np.array([0, 0, 1, 1, 1, 1])
 M3= MajoranaOp(nf2, bin3)
 N3 = Node(bin3, 1j**M3.rb())
 
-bin4 = np.array([0, 0, 0, 0, 1, 1, 1, 1])
-M4= MajoranaOp(nf2, bin4)
-N4 = Node(bin4, 1j**M4.rb())
+#bin4 = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+#M4= MajoranaOp(nf2, bin4)
+#N4 = Node(bin4, 1j**M4.rb())
 
-Init_Node = [N1, N2, N3, N4]
+Init_Node = [N1, N2, N3]
 init_len = len(Init_Node)
-init_maj = [M1, M2, M3, M4]
+init_maj = [M1, M2, M3]
 
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
@@ -79,9 +82,10 @@ for i in range(n-1):
 AppendH(U, h_ind, dt, 2, nf2)
     
 print("gate count", len(U))
+print(np.allclose(len(U), (n+1) * np.count_nonzero(h) + 2 * n * np.count_nonzero(V)))
 
 tc_st = 2
-tc_end = 11
+tc_end = 7
 rel_mp_global = np.zeros(tc_end - tc_st)
 rel_rot_global = np.zeros(tc_end - tc_st)
 
@@ -115,7 +119,7 @@ for tc_len in range(tc_st, tc_end):
     #print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
     for node in Output_Node:
-        #print(node)
+        #print(sum(node.b))
         pass
 
 
@@ -142,7 +146,8 @@ for tc_len in range(tc_st, tc_end):
         #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
 
-    DirectExp(dexp, init_len, init_maj, V, h, n * dt, nf, nf2)
+    #DirectExp(dexp, init_len, init_maj, V, h, n * dt, nf, nf2)
+    Trotterization(dexp, init_len, init_maj, U, nf)
 
     # 2-norm 
     #eps = 1e-15
@@ -155,8 +160,9 @@ for tc_len in range(tc_st, tc_end):
 
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
 trunc_met = "lt"
-#note = "_0.1_0.1_0.7"
-filename =  trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V))  + ".png"
+dir = "plot0211/"
+note = "_trott"
+filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
 
 #filename = "N=6test.png"
 lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename)
