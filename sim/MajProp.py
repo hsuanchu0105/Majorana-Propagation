@@ -188,7 +188,8 @@ def ExpectVal(Input_Node, lenN, rho):
             #print("Pairs = ", Pair)
             PairedOne = np.inner(Pair, rho)           # { # i | |n_i> = 1 and (b_{2i}, b_{2i+1}) is paired }
             Expect += ((-1)**PairedOne) * (1j**sum(Pair))* Input_Node[i].c  
-
+            
+    i
     return Expect
 
                 
@@ -289,31 +290,32 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
 
 
 
-def DirectExp(exp, init_len, init_maj, v, h, t, nf, nf2):
+
+def DirectExp(init_len, init_maj, v, h, t, i, nf, nf2):
 
     Maj_mtx = majorana_matrices(nf)
     
-    for i in range(2**nf):
-        test = np.eye(2**nf)[i]
-        rho = np.reshape(test, (2**nf, 1))
-        rhoT = np.transpose(rho)
+    #for i in range(2**nf):
+    test = np.eye(2**nf)[i]
+    rho = np.reshape(test, (2**nf, 1))
+    rhoT = np.transpose(rho)
 
-        F = np.zeros((2**nf, 2**nf), dtype = complex)
-        V = np.zeros((2**nf, 2**nf), dtype = complex)
-        
-        for m in range(nf2):
-            for k in range(m, nf2):
-                F += 2 * 1j * h[m][k] * (Maj_mtx[m] @ Maj_mtx[k])
-        for j in range(nf2):
-            for k in range(nf2):
-                for l in range(nf2):
-                    for m in range(nf2):
-                        V+= v[j][k][l][m] * (Maj_mtx[j] @ Maj_mtx[k] @ Maj_mtx[l]@ Maj_mtx[m])
-        H = Maj_to_mtx(init_len, init_maj, nf)
-        H = expm(1j * (V+F) * t) @ H @ expm(-1j * (V+F) * t)
+    F = np.zeros((2**nf, 2**nf), dtype = complex)
+    V = np.zeros((2**nf, 2**nf), dtype = complex)
+    
+    for m in range(nf2):
+        for k in range(m, nf2):
+            F += 2 * 1j * h[m][k] * (Maj_mtx[m] @ Maj_mtx[k])
+    for j in range(nf2):
+        for k in range(nf2):
+            for l in range(nf2):
+                for m in range(nf2):
+                    V+= v[j][k][l][m] * (Maj_mtx[j] @ Maj_mtx[k] @ Maj_mtx[l]@ Maj_mtx[m])
+    H = Maj_to_mtx(init_len, init_maj, nf)
+    H = expm(1j * (V+F) * t) @ H @ expm(-1j * (V+F) * t)
 
-        Expect_dir = np.trace(rho @ rhoT @ H, dtype = complex)
-        exp[i] = Expect_dir
+    Expect_dir = np.trace(rho @ rhoT @ H, dtype = complex)
+    return Expect_dir
         #print("Expectation value by direct exponential = ", Expect_dir)
     
 
@@ -498,7 +500,7 @@ def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
     #plt.xlabel('truncation length')
     plt.xlabel(r'maximal degree $\ell$')
     #plt.ylabel('relative error (global)')
-    plt.ylabel(r'$\left\|O^{\ell}_{\mathrm{MP}} - O_{\mathrm{trott}}\right\|_{2}$')
+    plt.ylabel(r'$\left\|O^{ell}_{\mathrm{MP}} - O_{\mathrm{trott}}\right\|_{2}$')
     plt.yscale('log')  
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.legend()

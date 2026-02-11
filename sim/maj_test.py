@@ -106,7 +106,7 @@ for ts in range(1, n):
 #for tc_len in range(tc_st, tc_end):
 #for coef_tr in range(coef_st, coef_end, -1):
     #trunc_param = np.array([tc_len, 1e-6])
-    trunc_param = np.array([4, 1e-6])
+    trunc_param = np.array([6, 1e-6])
     #trunc_param = np.array([tc_len, 10**(coef_tr)])
 
     #trunc_param = np.array([4, 1e-6])
@@ -128,7 +128,7 @@ for ts in range(1, n):
     #print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
     for node in Output_Node:
-        #print(sum(node.b))
+        #print(node)
         pass
 
 
@@ -146,9 +146,10 @@ for ts in range(1, n):
         for j in range(nf):
             rho_st[j] = c[j]
         #print("input Fock state = ", rho_st)
-        
-        
-        obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st)
+        pt = False
+        if(i==0):
+            pt = True
+        obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st, pt)
         #print("Expectation value by Majorana Propagation = ", obexp[i])
 
         rexp[i] = Rotated_ExpectVal(Node_out , h, dt, ts, rho_st, nf)
@@ -184,7 +185,7 @@ filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_"
 
 #filename = "N=6test.png"
 #lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename)
-
+'''
 ts_len = np.arange(ts_st, n)  
 plt.figure()
 #plt.plot(ts_len, rel_mp , marker='o', linestyle='-', label='MP')
@@ -204,6 +205,7 @@ plt.legend()
 plt.tight_layout()
 
 
-os.makedirs(os.path.dirname(filename), exist_ok=True)
-plt.savefig(filename, dpi=200, bbox_inches="tight")
+#os.makedirs(os.path.dirname(filename), exist_ok=True)
+#plt.savefig(filename, dpi=200, bbox_inches="tight")
 plt.show()
+'''
