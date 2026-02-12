@@ -9,7 +9,7 @@ dt = 0.01
 n = 2 #num of timestep
 
 #number of fermionic mode 
-nf = 4
+nf = 3
 nf2 = 2 * nf
 
 
@@ -39,28 +39,20 @@ V = np.zeros((nf2, nf2, nf2, nf2))
 #V[0][1][4][6] = 0.1
 #V[0][1][6][7] = 0.5
 
-init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
-#init_bin = np.array([1, 1, 0, 0, 1, 1])
+#init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
+init_bin = np.array([1, 1, 0, 0, 1, 1])
 M1= MajoranaOp(nf2, init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
 
-bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1])
-#bin2 = np.array([0, 0, 1, 1, 0, 0])
-M2= MajoranaOp(nf2, bin2)
-N2 = Node(bin2, 1j**M2.rb())
 
-bin3 = np.array([1, 0, 1, 0, 1, 0, 1, 0])
-#bin3 = np.array([0, 0, 1, 1, 1, 1])
-M3= MajoranaOp(nf2, bin3)
-N3 = Node(bin3, 1j**M3.rb())
 
 #bin4 = np.array([0, 0, 0, 0, 1, 1, 1, 1])
 #M4= MajoranaOp(nf2, bin4)
 #N4 = Node(bin4, 1j**M4.rb())
 
-Init_Node = [N1, N2, N3]
+Init_Node = [N1]
 init_len = len(Init_Node)
-init_maj = [M1, M2, M3]
+init_maj = [M1]
 
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
@@ -146,10 +138,9 @@ for ts in range(1, n):
         for j in range(nf):
             rho_st[j] = c[j]
         #print("input Fock state = ", rho_st)
-        pt = False
-        if(i==0):
-            pt = True
-        obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st, pt)
+        
+        
+        obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st)
         #print("Expectation value by Majorana Propagation = ", obexp[i])
 
         rexp[i] = Rotated_ExpectVal(Node_out , h, dt, ts, rho_st, nf)

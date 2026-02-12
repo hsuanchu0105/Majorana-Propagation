@@ -6,7 +6,7 @@ import time
 
 
 dt = 0.01
-n = 2 #num of timestep
+n = 11 #num of timestep
 
 #number of fermionic mode 
 nf = 4
@@ -15,8 +15,8 @@ nf2 = 2 * nf
 
 h = np.zeros((nf2, nf2))
 
-h[2][0] = -0.1 
-h[4][0] = -0.1
+h[2][0] = -1 
+h[4][0] = -1
 #h[5][1] = -0.2
 #h[3][2] = -0.2
 #h[5][1]= -0.1
@@ -36,8 +36,8 @@ V = np.zeros((nf2, nf2, nf2, nf2))
 #V[2][3][4][5] = 0.5
 #V[1][3][4][5] = 0.1
 #V[0][1][3][4] = -0.3
-#V[0][1][4][6] = 0.1
-#V[0][1][6][7] = 0.5
+V[0][1][4][6] = 1
+#V[0][1][6][7] = 4
 
 init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
 #init_bin = np.array([1, 1, 0, 0, 1, 1])
@@ -66,23 +66,8 @@ h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
 
 
-U = []
 
-sps = sparsity(h_ind, v_ind, nf2)
-print("Delta = ", sps)
-
-AppendH(U, h_ind, dt, 2, nf2)
-
-AppendV(U, v_ind, dt, 2, nf2)
- 
-for i in range(n-1):
-    AppendH(U, h_ind, 2 * dt, 2, nf2)
-    AppendV(U, v_ind, dt, 2, nf2)
-
-AppendH(U, h_ind, dt, 2, nf2)
-    
-print("gate count", len(U))
-print(np.allclose(len(U), (n+1) * np.count_nonzero(h) + 2 * n * np.count_nonzero(V)))
+#print(np.allclose(len(U), (n+1) * np.count_nonzero(h) + 2 * n * np.count_nonzero(V)))
 
 #tc_st = 2
 #tc_end = 9
@@ -106,6 +91,23 @@ for ts in range(1, n):
 #for tc_len in range(tc_st, tc_end):
 #for coef_tr in range(coef_st, coef_end, -1):
     #trunc_param = np.array([tc_len, 1e-6])
+    U = []
+
+    #sps = sparsity(h_ind, v_ind, nf2)
+    #print("Delta = ", sps)
+
+    AppendH(U, h_ind, dt, 2, nf2)
+
+    AppendV(U, v_ind, dt, 2, nf2)
+    
+    for i in range(ts-1):
+        AppendH(U, h_ind, 2 * dt, 2, nf2)
+        AppendV(U, v_ind, dt, 2, nf2)
+
+    AppendH(U, h_ind, dt, 2, nf2)
+        
+    print("gate count", len(U))
+
     trunc_param = np.array([4, 1e-6])
     #trunc_param = np.array([tc_len, 10**(coef_tr)])
 
@@ -178,8 +180,8 @@ for ts in range(1, n):
 
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
 trunc_met = "lt"
-dir = "plot0211/"
-note = "_td"
+dir = "plot0212/"
+note = "_err"
 filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
 
 #filename = "N=6test.png"
@@ -187,13 +189,35 @@ filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_"
 
 ts_len = np.arange(ts_st, n)  
 plt.figure()
-#plt.plot(ts_len, rel_mp , marker='o', linestyle='-', label='MP')
-#plt.plot(ts_len, rel_rmp , marker='o', linestyle='-', label='RMP')
+plt.plot(ts_len, rel_mp , marker='o', linestyle='-', label='MP')
+plt.plot(ts_len, rel_rmp , marker='o', linestyle='-', label='RMP')
+
+
+
+#plt.xlabel('truncation length')
+plt.xlabel('timestep')
+plt.ylabel('relative error (global)')
+#plt.ylabel(r'$\left\|O(t)\right\|_{2}$')
+plt.yscale('log')  
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.tight_layout()
+
+
+os.makedirs(os.path.dirname(filename), exist_ok=True)
+plt.savefig(filename, dpi=200, bbox_inches="tight")
+plt.show()
+
+
+trunc_met = "lt"
+dir = "plot0212/"
+note = "_td"
+filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
+
+plt.figure()
 plt.plot(ts_len, mp , marker='o', linestyle='-', label='MP')
 plt.plot(ts_len, rmp , marker='o', linestyle='-', label='RMP')
 plt.plot(ts_len, ana , marker='o', linestyle='-', label='ANA')
-
-
 #plt.xlabel('truncation length')
 plt.xlabel('timestep')
 #plt.ylabel('relative error (global)')

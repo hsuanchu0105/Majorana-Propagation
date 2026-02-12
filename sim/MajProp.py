@@ -186,7 +186,7 @@ def ExpectVal(Input_Node, lenN, rho):
             while(len(Pair) < len(rho)):
                 Pair = np.append(Pair, 0)
             #print("Pairs = ", Pair)
-            PairedOne = np.inner(Pair, rho)           # { # i | |n_i> = 1 and (b_{2i}, b_{2i+1}) is paired }
+            PairedOne = np.inner(Pair, rho)           # { i | |n_i> = 1 and (b_{2i}, b_{2i+1}) is paired }
             Expect += ((-1)**PairedOne) * (1j**sum(Pair))* Input_Node[i].c  
             
     i
