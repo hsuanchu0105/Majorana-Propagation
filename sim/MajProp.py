@@ -472,14 +472,16 @@ def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho, nf):
 
 def coefftrunc_plot(coef_st, coef_end,rel_mp_global, rel_rot_global, filename):
      
-    tc_coeff = np.arange(coef_st, coef_end, -1)
+    tc_coeff = 10**np.arange(coef_st, coef_end, -1, dtype = float)
     plt.figure()
     plt.plot(tc_coeff, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
     plt.plot(tc_coeff, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
 
-    plt.gca().invert_xaxis()
+    #plt.gca().invert_xaxis()
     plt.xlabel('truncation coefficient order')
     plt.ylabel('relative error (global)')
+    plt.yscale('log')
+    plt.xscale('log')
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.legend()
     plt.tight_layout()
@@ -492,15 +494,15 @@ def coefftrunc_plot(coef_st, coef_end,rel_mp_global, rel_rot_global, filename):
 def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
     tc_len = np.arange(tc_st, tc_end)  
     plt.figure()
-    plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-')
-    #plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
-    #plt.plot(tc_len, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
+    #plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-')
+    plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
+    plt.plot(tc_len, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
 
     
     #plt.xlabel('truncation length')
     plt.xlabel(r'maximal degree $\ell$')
-    #plt.ylabel('relative error (global)')
-    plt.ylabel(r'$\left\|O^{ell}_{\mathrm{MP}} - O_{\mathrm{trott}}\right\|_{2}$')
+    plt.ylabel('relative error (global)')
+    #plt.ylabel(r'$\left\|O^{ell}_{\mathrm{MP}} - O_{\mathrm{trott}}\right\|_{2}$')
     plt.yscale('log')  
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.legend()
