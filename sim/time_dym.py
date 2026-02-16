@@ -29,15 +29,15 @@ for ts in range(1, n):
     trunc_param = np.array([8, 1e-8])
     U = []
 
-    AppendH(U, h_ind, dt, 2, nf2)
+    AppendH(U, h_ind, dt, trott, nf2)
 
-    AppendV(U, v_ind, dt, 2, nf2)
+    AppendV(U, v_ind, dt, trott, nf2)
 
     for i in range(ts-1):
-        AppendH(U, h_ind, 2 * dt, 2, nf2)
-        AppendV(U, v_ind, dt, 2, nf2)
+        AppendH(U, h_ind, 2 * dt, trott, nf2)
+        AppendV(U, v_ind, dt, trott, nf2)
 
-    AppendH(U, h_ind, dt, 2, nf2)
+    AppendH(U, h_ind, dt, trott, nf2)
         
     print("gate count", len(U))
     #print("Fermionic gate:", U)

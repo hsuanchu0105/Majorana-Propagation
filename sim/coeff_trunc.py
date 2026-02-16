@@ -11,16 +11,15 @@ U = []
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
 
-# the comparison can be written into more efficient way
-AppendH(U, h_ind, dt, 2, nf2)
+AppendH(U, h_ind, dt, trott, nf2)
 
-AppendV(U, v_ind, dt, 2, nf2)
+AppendV(U, v_ind, dt, trott, nf2)
 
 for i in range(n-1):
-    AppendH(U, h_ind, 2 * dt, 2, nf2)
-    AppendV(U, v_ind, dt, 2, nf2)
+    AppendH(U, h_ind, 2 * dt, trott, nf2)
+    AppendV(U, v_ind, dt, trott, nf2)
 
-AppendH(U, h_ind, dt, 2, nf2)
+AppendH(U, h_ind, dt, trott, nf2)
     
 print("gate count", len(U))
 

@@ -485,12 +485,12 @@ def coefftrunc_plot(coef_st, coef_end,rel_mp_global, rel_rot_global, filename):
     plt.savefig(filename, dpi=200, bbox_inches="tight")
     plt.show()
 
-def lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename):
-    tc_len = np.arange(tc_st, tc_end)  
+def lentrunc_plot(tc_arr, rel_mp_global, rel_rot_global, filename):
+     
     plt.figure()
     #plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-')
-    plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
-    plt.plot(tc_len, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
+    plt.plot(tc_arr, rel_mp_global, marker='o', linestyle='-', label='rel_mp_global')
+    plt.plot(tc_arr, rel_rot_global, marker='o', linestyle='-', label='rel_rot_global')
 
     
     #plt.xlabel('truncation length')

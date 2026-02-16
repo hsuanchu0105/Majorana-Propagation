@@ -9,6 +9,7 @@ n = 10 #num of timestep
 nf = 4
 nf2 = 2 * nf
 
+trott = 2 # trotterization order 
 
 h = np.zeros((nf2, nf2))
 
@@ -19,8 +20,8 @@ h[0][2] = 1
 
 
 V = np.zeros((nf2, nf2, nf2, nf2))
-#V[0][1][2][3] = 0.5
-#V[1][2][3][4] = 0.5
+V[0][1][2][3] = 0.5
+V[1][2][3][4] = 0.5
 #V[2][3][4][5] = 0.5
 #V[1][3][4][5] = 0.1
 #V[0][1][3][4] = -3
@@ -33,21 +34,24 @@ v_inds = np.nonzero(V)
 
 
 
-len_h = len(h_inds[0])
-len_v = len(v_inds[0])
+len_hs = len(h_inds[0])
+len_vs = len(v_inds[0])
 
-for i in range(len_h):
+len_h = 2 * len_hs
+len_v = len_vs
+
+for i in range(len_hs):
     h[h_inds[1][i]][h_inds[0][i]] = -h[h_inds[0][i]][h_inds[1][i]]
 	
-print(h)
+#print(h)
 
-for i in range(len_v):
-	v_entry = [v_inds[0][i], v_inds[1][i], v_inds[2][i], v_inds[3][i]]
-	perms = [list(p) for p in itertools.permutations(v_entry)]
-	for j in range(len(perms)):
-		V[perms[j][0], perms[j][1], perms[j][2], perms[j][3]] = perm_parity(perms[j][0], perms[j][1], perms[j][2], perms[j][3]) * V[v_inds[0][i], v_inds[1][i], v_inds[2][i], v_inds[3][i]]
+#for i in range(len_v):
+#	v_entry = [v_inds[0][i], v_inds[1][i], v_inds[2][i], v_inds[3][i]]
+#	perms = [list(p) for p in itertools.permutations(v_entry)]
+#	for j in range(len(perms)):
+#		V[perms[j][0], perms[j][1], perms[j][2], perms[j][3]] = perm_parity(perms[j][0], perms[j][1], perms[j][2], perms[j][3]) * V[v_inds[0][i], v_inds[1][i], v_inds[2][i], v_inds[3][i]]
 	
-
+# different form of V might affect the efficiency (h we need it to be antisymmetric)
 
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)

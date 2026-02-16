@@ -1,0 +1,36 @@
+Fermionic mode =  4
+dt =  0.01
+n =  10
+alpha_h =  4
+alpha_v =  2
+gate count 84
+Coeff trunc =  1e-08
+	
+Length Truncation at  2
+Majorana Propagation : 0.0081 seconds
+Rotated Evolution : 7.0797 seconds
+Expectation calculation : 0.0004 seconds
+Rotated expectation calculation : 0.3545 seconds
+Direct Exponential : 0.0549 seconds
+	
+Length Truncation at  4
+Majorana Propagation : 36.5335 seconds
+Rotated Evolution : 61.6490 seconds
+Expectation calculation : 0.2246 seconds
+Rotated expectation calculation : 1.6030 seconds
+Direct Exponential : 0.0480 seconds
+	
+Length Truncation at  6
+Majorana Propagation : 130.2649 seconds
+Rotated Evolution : 175.2999 seconds
+Expectation calculation : 1.1419 seconds
+Rotated expectation calculation : 7.0929 seconds
+Direct Exponential : 0.0767 seconds
+	
+Length Truncation at  8
+Majorana Propagation : 138.9576 seconds
+Rotated Evolution : 214.5704 seconds
+Expectation calculation : 1.4026 seconds
+Rotated expectation calculation : 6.2675 seconds
+Direct Exponential : 0.0982 seconds
+Total time : 782.8524 seconds

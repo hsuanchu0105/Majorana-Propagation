@@ -11,15 +11,15 @@ U = []
 #print("Delta = ", sps)
 
 # the comparison can be written into more efficient way
-AppendH(U, h_ind, dt, 2, nf2)
+AppendH(U, h_ind, dt, trott, nf2)
 
-AppendV(U, v_ind, dt, 2, nf2)
+AppendV(U, v_ind, dt, trott, nf2)
 
 for i in range(n-1):
-    AppendH(U, h_ind, 2 * dt, 2, nf2)
-    AppendV(U, v_ind, dt, 2, nf2)
+    AppendH(U, h_ind, 2 * dt, trott, nf2)
+    AppendV(U, v_ind, dt, trott, nf2)
 
-AppendH(U, h_ind, dt, 2, nf2)
+AppendH(U, h_ind, dt, trott, nf2)
     
 print("gate count", len(U))
 
@@ -27,15 +27,13 @@ print("gate count", len(U))
 
 tc_st = 2
 tc_end = 9
-rel_mp_global = np.zeros(tc_end - tc_st)
-rel_rot_global = np.zeros(tc_end - tc_st)
+tc_len = tc_end - tc_st 
+rel_mp_global = np.zeros(tc_len)
+rel_rot_global = np.zeros(tc_len)
 
 
-
-
-
-for tc_len in range(tc_st, tc_end):
-    trunc_param = np.array([tc_len, 1e-6])
+for tl in range(tc_st, tc_end):
+    trunc_param = np.array([tl , 1e-6])
 
 
     #print("Fermionic gate:", U)
@@ -90,8 +88,8 @@ for tc_len in range(tc_st, tc_end):
 
     # 2-norm 
     
-    rel_mp_global[tc_len - tc_st] = np.linalg.norm(obexp - dexp) / np.linalg.norm(dexp)
-    rel_rot_global[tc_len - tc_st] = np.linalg.norm(rexp - dexp) / np.linalg.norm(dexp)
+    rel_mp_global[tl - tc_st] = np.linalg.norm(obexp - dexp) / np.linalg.norm(dexp)
+    rel_rot_global[tl - tc_st] = np.linalg.norm(rexp - dexp) / np.linalg.norm(dexp)
     
     
     ErrorPrint(dexp, obexp, rexp, 2)
@@ -100,9 +98,9 @@ for tc_len in range(tc_st, tc_end):
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
 trunc_met = "lt"
 dir = "plot0216/"
-note = ""
+note = "test"
 filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
 
-
-lentrunc_plot(tc_st, tc_end, rel_mp_global, rel_rot_global, filename)
+tc_arr = np.arange(tc_st, tc_end)
+lentrunc_plot(tc_arr, rel_mp_global, rel_rot_global, filename)
 
