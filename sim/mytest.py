@@ -2,6 +2,8 @@ import numpy as np
 from scipy.linalg import expm
 from collections import defaultdict
 import matplotlib.pyplot as plt
+import itertools
+from MajProp import * 
 
 
 
@@ -295,3 +297,43 @@ delta = sparsity(h_ind,v_ind, 2 * N)
 print(delta)
 
 
+nf2 = 4
+# impose symmetry on V 
+V = np.zeros((nf2, nf2, nf2, nf2))
+V[0][1][2][3] = -0.5
+v_ind = np.nonzero(V) 
+len_v = len(v_ind[0])
+
+for i in range(len_v):
+	v_entry = [v_ind[0][i], v_ind[1][i], v_ind[2][i], v_ind[3][i]]
+	perms = [list(p) for p in itertools.permutations(v_entry)]
+	for j in range(len(perms)):
+		V[perms[j][0], perms[j][1], perms[j][2], perms[j][3]] = perm_parity(perms[j][0], perms[j][1], perms[j][2], perms[j][3]) * V[v_ind[0][i], v_ind[1][i], v_ind[2][i], v_ind[3][i]]
+
+Vc = np.zeros((nf2, nf2, nf2, nf2))
+Vc[0][1][2][3] = -0.5
+Vc[0][1][3][2] = 0.5
+Vc[0][2][1][3] = 0.5
+Vc[0][2][3][1] = -0.5
+Vc[0][3][2][1] = 0.5
+Vc[0][3][1][2] = -0.5
+Vc[1][0][2][3] = 0.5
+Vc[1][0][3][2]  = -0.5
+Vc[1][3][0][2] = 0.5
+Vc[1][3][2][0] = -0.5
+Vc[1][2][3][0] = 0.5
+Vc[1][2][0][3] = -0.5
+Vc[2][1][0][3] = 0.5
+Vc[2][1][3][0] = -0.5
+Vc[2][3][1][0] = 0.5
+Vc[2][3][0][1] = -0.5
+Vc[2][0][3][1] = 0.5
+Vc[2][0][1][3] = -0.5
+Vc[3][1][0][2] = -0.5
+Vc[3][1][2][0] = 0.5
+Vc[3][2][1][0] = -0.5
+Vc[3][2][0][1] = 0.5
+Vc[3][0][2][1] = -0.5
+Vc[3][0][1][2] = 0.5
+
+print(np.allclose(V, Vc))

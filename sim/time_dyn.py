@@ -5,7 +5,7 @@ import time
 
 
 
-U = []
+
 
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
@@ -20,12 +20,14 @@ rmp = np.zeros(n - ts_st)
 ana = np.zeros(n - ts_st)
 rel_mp = np.zeros(n - ts_st)
 rel_rmp = np.zeros(n - ts_st)
+mp_trott = np.zeros(n - ts_st)
 
 
 for ts in range(1, n):
     
 
-    trunc_param = np.array([4, 1e-6])
+    trunc_param = np.array([8, 1e-8])
+    U = []
 
     AppendH(U, h_ind, dt, 2, nf2)
 
@@ -81,58 +83,63 @@ for ts in range(1, n):
         rexp[i] = Rotated_ExpectVal(Node_out , h, dt, ts, rho_st, nf)
         #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
-        dexp[i] = DirectExp(init_len, init_maj, V, h, ts * dt, i, nf, nf2)
+        #dexp[i] = DirectExp(init_len, init_maj, V, h, ts * dt, i, nf, nf2)
         
 
 
     
-    #Trotterization(dexp, init_len, init_maj, U, nf)
+    Trotterization(dexp, init_len, init_maj, U, nf)
 
     # 2-norm 
-    mp[ts - ts_st] = np.linalg.norm(obexp)
-    rmp[ts - ts_st] = np.linalg.norm(rexp)
-    ana[ts - ts_st] = np.linalg.norm(dexp)
-    rel_mp[ts - ts_st] = np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
-    rel_rmp[ts - ts_st] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
+    #mp[ts - ts_st] = np.linalg.norm(obexp)
+    #rmp[ts - ts_st] = np.linalg.norm(rexp)
+    #ana[ts - ts_st] = np.linalg.norm(dexp)
+    #rel_mp[ts - ts_st] = np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
+    #rel_rmp[ts - ts_st] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
+    mp_trott[ts - ts_st] = np.linalg.norm(obexp - dexp)
     
     ErrorPrint(dexp, obexp, rexp, 2)
 
 
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
-trunc_met = "ct"
-dir = "plot0212/"
-note = ""
+trunc_met = "td"
+dir = "plot0216/"
+note = "_ct_1e-8_trott"
 filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
 
 
 #'''
 ts_len = np.arange(ts_st, n)  
 plt.figure()
-plt.plot(ts_len, rel_mp , marker='o', linestyle='-', label='MP')
-plt.plot(ts_len, rel_rmp , marker='o', linestyle='-', label='RMP')
+#plt.plot(ts_len, rel_mp , marker='o', linestyle='-', label='MP')
+#plt.plot(ts_len, rel_rmp , marker='o', linestyle='-', label='RMP')
+plt.plot(ts_len, mp_trott , marker='o', linestyle='-')
 
 
 
 #plt.xlabel('truncation length')
 plt.xlabel('timestep')
-plt.ylabel('relative error (global)')
+#plt.ylabel('relative error (global)')
 #plt.ylabel(r'$\left\|O(t)\right\|_{2}$')
+plt.ylabel(r'$\left\|Tr(\rho O^{\ell}_{\mathrm{MP}}) - Tr(\rho O_{\mathrm{trott}})\right\|_{2}$')
 plt.yscale('log')  
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
+plt.title("Comparison between Majorana Propagation and Trotterization")
 plt.tight_layout()
 
 
 os.makedirs(os.path.dirname(filename), exist_ok=True)
 plt.savefig(filename, dpi=200, bbox_inches="tight")
 plt.show()
-
+'''
 
 trunc_met = "lt"
-dir = "plot0212/"
+dir = "plot0216/"
 note = "_td4"
 filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
 
+ts_len = np.arange(ts_st, n)
 plt.figure()
 plt.plot(ts_len, mp , marker='o', linestyle='-', label='MP')
 plt.plot(ts_len, rmp , marker='o', linestyle='-', label='RMP')
@@ -150,4 +157,4 @@ plt.tight_layout()
 os.makedirs(os.path.dirname(filename), exist_ok=True)
 plt.savefig(filename, dpi=200, bbox_inches="tight")
 plt.show()
-#'''
+'''

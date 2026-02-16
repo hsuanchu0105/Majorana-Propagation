@@ -1,8 +1,9 @@
 import numpy as np
 from MajProp import *
+import itertools
 
 dt = 0.01
-n = 8 #num of timestep
+n = 10 #num of timestep
 
 #number of fermionic mode 
 nf = 4
@@ -11,19 +12,10 @@ nf2 = 2 * nf
 
 h = np.zeros((nf2, nf2))
 
-h[2][0] = -1 
-h[4][0] = -1
-#h[5][1] = -0.2
-#h[3][2] = -0.2
-#h[5][1]= -0.1
-
-
-for i in range(nf2):
-    for j in range(i+1, nf2):
-        h[i][j] = -h[j][i]
-
-#print(h)
-
+h[0][1] = 1 
+h[0][2] = 1
+#h[1][5] = -0.2
+#h[2][3] = 0.5
 
 
 V = np.zeros((nf2, nf2, nf2, nf2))
@@ -32,8 +24,33 @@ V = np.zeros((nf2, nf2, nf2, nf2))
 #V[2][3][4][5] = 0.5
 #V[1][3][4][5] = 0.1
 #V[0][1][3][4] = -3
-V[0][1][4][6] = 1
-V[0][1][6][7] = 8
+#V[0][1][4][6] = 1
+#V[0][1][6][7] = 8
+
+
+h_inds = np.nonzero(h) #seed 
+v_inds = np.nonzero(V)
+
+
+
+len_h = len(h_inds[0])
+len_v = len(v_inds[0])
+
+for i in range(len_h):
+    h[h_inds[1][i]][h_inds[0][i]] = -h[h_inds[0][i]][h_inds[1][i]]
+	
+print(h)
+
+for i in range(len_v):
+	v_entry = [v_inds[0][i], v_inds[1][i], v_inds[2][i], v_inds[3][i]]
+	perms = [list(p) for p in itertools.permutations(v_entry)]
+	for j in range(len(perms)):
+		V[perms[j][0], perms[j][1], perms[j][2], perms[j][3]] = perm_parity(perms[j][0], perms[j][1], perms[j][2], perms[j][3]) * V[v_inds[0][i], v_inds[1][i], v_inds[2][i], v_inds[3][i]]
+	
+
+
+h_ind = np.nonzero(h)
+v_ind = np.nonzero(V)
 
 init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
 #init_bin = np.array([1, 1, 0, 0, 1, 1])
@@ -58,5 +75,3 @@ Init_Node = [N1, N2, N3]
 init_len = len(Init_Node)
 init_maj = [M1, M2, M3]
 
-h_ind = np.nonzero(h)
-v_ind = np.nonzero(V)
