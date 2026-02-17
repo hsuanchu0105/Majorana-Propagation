@@ -1,16 +1,17 @@
 from MajProp import * 
 from Setting import * 
 import time 
+from datetime import date
 
-
-
+"""
+Comparison of Majorana Propagation and Rotated Majorana Propagation at different truncation length
+"""
 
 U = []
 
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
 
-# the comparison can be written into more efficient way
 AppendH(U, h_ind, dt, trott, nf2)
 
 AppendV(U, v_ind, dt, trott, nf2)
@@ -97,9 +98,9 @@ for tl in range(tc_st, tc_end):
 
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
 trunc_met = "lt"
-dir = "plot0216/"
-note = "test"
-filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
+dir_ = f"plot{date.today():%m%d}/"
+note = "_2"
+filename =  dir_ + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
 
 tc_arr = np.arange(tc_st, tc_end)
 lentrunc_plot(tc_arr, rel_mp_global, rel_rot_global, filename)

@@ -1,5 +1,6 @@
 from MajProp import * 
 from Setting import *
+from datetime import date
 import time 
 
 
@@ -96,9 +97,9 @@ for coef_tr in range(coef_st, coef_end, -1):
 
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
 trunc_met = "ct"
-dir = "plot0216/"
+dir_ = f"plot{date.today():%m%d}/"
 note = ""
-filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
+filename =  dir_ + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
 
 
 coefftrunc_plot(coef_st, coef_end, rel_mp_global, rel_rot_global, filename)

@@ -336,4 +336,84 @@ Vc[3][2][0][1] = 0.5
 Vc[3][0][2][1] = -0.5
 Vc[3][0][1][2] = 0.5
 
-print(np.allclose(V, Vc))
+#print(np.allclose(V, Vc))
+
+
+
+
+
+def random_sparse_h(nf2, nmin=1, nmax=6, complex_coeff=False, seed=None):
+    rng = np.random.default_rng(seed)
+
+    # 1) choose number of terms
+    n = rng.integers(nmin, nmax + 1)   # inclusive
+
+    # 2) all (i,j) with i<j
+    iu, ju = np.triu_indices(nf2, k=1)   # k=1 excludes diagonal
+    all_pairs = np.column_stack([iu, ju])  # shape (M, 2)
+
+    # 3) sample n distinct pairs
+    idx = rng.choice(all_pairs.shape[0], size=n, replace=False)
+    pairs = all_pairs[idx]  # (n,2)
+
+    # allocate h
+    h = np.zeros((nf2, nf2), dtype=complex if complex_coeff else float)
+
+    # 4) assign coefficients ~ N(0,1)
+    if complex_coeff:
+        vals = rng.uniform(-1, 1, size=n) + 1j * rng.uniform(-1, 1, size=n)
+    else:
+        vals = rng.uniform(-1, 1, size=n)
+
+    for (i, j), v in zip(pairs, vals):
+        h[i, j] = v
+        # mirror if you want Hermitian / symmetric:
+        h[j, i] = -np.conj(v) if complex_coeff else -v
+
+    return n, pairs, h
+
+# example
+nf2 = 10
+n, pairs, h = random_sparse_h(nf2, nmin=1, nmax=6, complex_coeff=False, seed=0)
+#print("n =", n)
+#print("pairs =", pairs)
+#print(h)
+
+def random_sparse_v(nf2, nmin=1, nmax=6, complex_coeff=False, seed=None):
+    rng = np.random.default_rng(seed)
+
+    # 1) number of nonzero terms
+    n = rng.integers(nmin, nmax + 1)
+
+    # number of possible unique 4-tuples = C(nf2, 4)
+    total = (nf2 * (nf2-1) * (nf2-2) * (nf2-3)) // 24
+    if n > total:
+        raise ValueError(f"n={n} too large; max is C(nf2,4)={total}")
+
+    # 2) sample n unique 4-tuples by sampling 4 distinct indices then sorting
+    tuples = set()
+    while len(tuples) < n:
+        idx = rng.choice(nf2, size=4, replace=False)
+        idx.sort()
+        tuples.add(tuple(idx))
+    tuples = np.array(list(tuples), dtype=int)  # shape (n,4)
+
+    # 3) coefficients
+    if complex_coeff:
+        vals = rng.uniform(-1, 1, size=n) + 1j * rng.uniform(-1, 1, size=n)
+        v = np.zeros((nf2, nf2, nf2, nf2), dtype=complex)
+    else:
+        vals = rng.uniform(-1, 1, size=n)
+        v = np.zeros((nf2, nf2, nf2, nf2), dtype=float)
+
+    # 4) assign (only canonical entry)
+    for (j,k,l,m), val in zip(tuples, vals):
+        v[j, k, l, m] = val
+
+    return n, tuples, v
+
+nf2 = 10
+n, pairs, v = random_sparse_v(nf2, nmin=1, nmax=6, complex_coeff=False, seed=0)
+print("n =", n)
+print("pairs =", pairs)
+print(v)

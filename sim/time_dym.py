@@ -1,7 +1,7 @@
 from MajProp import * 
 from Setting import *
 import time 
-
+from datetime import date
 
 
 
@@ -103,9 +103,9 @@ for ts in range(1, n):
 
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
 trunc_met = "td"
-dir = "plot0216/"
+dir_ = f"plot{date.today():%m%d}/"
 note = "_ct_1e-8_trott"
-filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
+filename =  dir_ + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
 
 
 #'''

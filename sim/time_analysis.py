@@ -1,5 +1,6 @@
 from MajProp import * 
-from Setting import * 
+from Setting_ta import * 
+from datetime import date
 import time 
 import sys
 import os
@@ -20,8 +21,8 @@ coeff_trunc = 1e-8
 
 
 trunc_met = "lt"
-dir_ = "ta_0216/"
-note = "_v1"
+dir_ = f"ta{date.today():%m%d}/"
+note = ""
 log_path =  dir_ + trunc_met + "_" + str(coeff_trunc) + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".txt"
 
 os.makedirs(os.path.dirname(log_path) or ".", exist_ok=True)
