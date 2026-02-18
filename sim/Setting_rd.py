@@ -2,7 +2,7 @@ import numpy as np
 from MajProp import *
 import itertools
 
-
+cn = 1 # case number
 sn = 10 # sample numbers per (alpha_h, alpha_v)
 dt = 0.01
 n = 10 #num of timestep

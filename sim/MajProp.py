@@ -538,18 +538,16 @@ def ErrorPrint(_dexp, _obexp, _rexp, _ord):
     print("Global relative error")
     print(rel_ob_global, rel_re_global)
 
-def random_sparse_h(nf2, nmin=1, nmax=6, complex_coeff=False, seed=None):
+def random_sparse_h(alpha, nf2, complex_coeff=False, seed=None):
+    
     rng = np.random.default_rng(seed)
-
-    # 1) choose number of terms
-    n = rng.integers(nmin, nmax + 1)   # inclusive
 
     # 2) all (i,j) with i<j
     iu, ju = np.triu_indices(nf2, k=1)   # k=1 excludes diagonal
     all_pairs = np.column_stack([iu, ju])  # shape (M, 2)
 
     # 3) sample n distinct pairs
-    idx = rng.choice(all_pairs.shape[0], size=n, replace=False)
+    idx = rng.choice(all_pairs.shape[0], size=alpha, replace=False)
     pairs = all_pairs[idx]  # (n,2)
 
     # allocate h
@@ -557,33 +555,31 @@ def random_sparse_h(nf2, nmin=1, nmax=6, complex_coeff=False, seed=None):
 
     # 4) assign coefficients ~ Unif(-1, 1)
     if complex_coeff:
-        vals = rng.uniform(-1, 1, size=n) + 1j * rng.uniform(-1, 1, size=n)
+        vals = rng.uniform(-1, 1, size=alpha) + 1j * rng.uniform(-1, 1, size=alpha)
     else:
-        vals = rng.uniform(-1, 1, size=n)
+        vals = rng.uniform(-1, 1, size=alpha)
 
     for (i, j), v in zip(pairs, vals):
         h[i, j] = v
         # mirror if you want Hermitian / symmetric:
         h[j, i] = -np.conj(v) if complex_coeff else -v
 
-    return n, pairs, h
+    return pairs, h
 
 import numpy as np
 
-def random_sparse_v(nf2, nmin=1, nmax=6, complex_coeff=False, seed=None):
+def random_sparse_v(alpha, nf2, complex_coeff=False, seed=None):
+    
     rng = np.random.default_rng(seed)
-
-    # 1) number of nonzero terms
-    n = rng.integers(nmin, nmax + 1)
 
     # number of possible unique 4-tuples = C(nf2, 4)
     total = (nf2 * (nf2-1) * (nf2-2) * (nf2-3)) // 24
-    if n > total:
-        raise ValueError(f"n={n} too large; max is C(nf2,4)={total}")
+    if alpha > total:
+        raise ValueError(f"n={alpha} too large; max is C(nf2,4)={total}")
 
     # 2) sample n unique 4-tuples by sampling 4 distinct indices then sorting
     tuples = set()
-    while len(tuples) < n:
+    while len(tuples) < alpha:
         idx = rng.choice(nf2, size=4, replace=False)
         idx.sort()
         tuples.add(tuple(idx))
@@ -591,14 +587,14 @@ def random_sparse_v(nf2, nmin=1, nmax=6, complex_coeff=False, seed=None):
 
     # 3) coefficients
     if complex_coeff:
-        vals = rng.uniform(-1, 1, size=n) + 1j * rng.uniform(-1, 1, size=n)
+        vals = rng.uniform(-1, 1, size=alpha) + 1j * rng.uniform(-1, 1, size=alpha)
         v = np.zeros((nf2, nf2, nf2, nf2), dtype=complex)
     else:
-        vals = rng.uniform(-1, 1, size=n)
+        vals = rng.uniform(-1, 1, size=alpha)
         v = np.zeros((nf2, nf2, nf2, nf2), dtype=float)
 
     # 4) assign (only canonical entry)
     for (j,k,l,m), val in zip(tuples, vals):
         v[j, k, l, m] = val
 
-    return n, tuples, v
+    return tuples, v

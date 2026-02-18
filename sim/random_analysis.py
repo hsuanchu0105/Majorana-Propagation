@@ -5,7 +5,10 @@ from datetime import date
 
 
 
-
+nmin_h=1
+nmax_h=2
+nmin_v=1
+nmax_v=2
 
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
@@ -15,13 +18,22 @@ from datetime import date
 err = np.zeros(sn)
 err_rot = np.zeros(sn)
 
-for sam in range(sn):
-    master_rng = np.random.default_rng(123)  # pick any fixed master seed
-    seeds = master_rng.integers(0, 2**32 - 1, size=10, dtype=np.uint32)
+for cs in range(cn):
+    # for each case we have one (alpha_h, alpha_v) pair
+    rng_nzc = np.random.default_rng(21)  # non-zero count 
+    alpha_h = rng_nzc.integers(nmin_h, nmax_h + 1)
+    alpha_v = rng_nzc.integers(nmin_v, nmax_v + 1)
 
-    for s in seeds:
-        alpha_h, pairs_h, h = random_sparse_h(nf2, nmin=1, nmax=2, complex_coeff=False, seed=int(s))
-        alpha_v, pairs_v, V = random_sparse_v(nf2, nmin=1, nmax=2, complex_coeff=False, seed=int(s))
+    print("alpha_h, alpha_v = ", alpha_h, alpha_v)
+
+    master_rng = np.random.default_rng(123)  # pick any fixed master seed
+    seeds = master_rng.integers(0, 2**32 - 1, size=sn, dtype=np.uint32)
+
+
+    for s in range(sn):
+        
+        pairs_h, h = random_sparse_h(alpha_h, nf2, complex_coeff=False, seed=int(seeds[s]))
+        pairs_v, V = random_sparse_v(alpha_v, nf2, complex_coeff=False, seed=int(seeds[s]))
 
 
         #print(h)
@@ -97,12 +109,13 @@ for sam in range(sn):
 
 
     
-    #Trotterization(dexp, init_len, init_maj, U, nf)
+        #Trotterization(dexp, init_len, init_maj, U, nf)
 
-    # 2-norm 
-    err[sam] = np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
-    err_rot[sam] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
-    ErrorPrint(dexp, obexp, rexp, 2)
+        # 2-norm 
+        eps = 1e-15
+        err[s] = 0.0 if np.linalg.norm(dexp) < eps else np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
+        err_rot[s] = 0.0 if np.linalg.norm(dexp) < eps else np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
+        ErrorPrint(dexp, obexp, rexp, 2)
 
 
 err_avg = err.mean()
