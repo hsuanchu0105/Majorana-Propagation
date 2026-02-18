@@ -13,15 +13,8 @@ nf2 = 2 * nf
 
 trott = 2 # trotterization order 
 
-alpha_h, pairs_h, h = random_sparse_h(nf2, nmin=1, nmax=3, complex_coeff=False, seed=0)
-alpha_v, pairs_v, V = random_sparse_v(nf2, nmin=1, nmax=6, complex_coeff=False, seed=0)
-
-
-#print(h)
-
-
-h_ind = np.nonzero(h)
-v_ind = np.nonzero(V)
+len_trunc = 6
+coeff_trunc = 1e-6
 
 init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
 #init_bin = np.array([1, 1, 0, 0, 1, 1])
