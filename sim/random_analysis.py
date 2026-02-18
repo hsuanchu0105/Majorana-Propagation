@@ -2,12 +2,30 @@ from MajProp import *
 from Setting_rd import *
 import time 
 from datetime import date
+import sys
+import os
+
+class Tee:
+    def __init__(self, *files):
+        self.files = files
+    def write(self, data):
+        for f in self.files:
+            f.write(data)
+            f.flush()
+    def flush(self):
+        for f in self.files:
+            f.flush()
 
 
+dir_ = f"ta{date.today():%m%d}/"
+note = "_rd_ana"
 
-nmin_h=1
+nz_seed = 21
+mst_seed = 123
+
+nmin_h=2
 nmax_h=2
-nmin_v=1
+nmin_v=2
 nmax_v=2
 
 #sps = sparsity(h_ind, v_ind, nf2)
@@ -20,14 +38,29 @@ err_rot = np.zeros(sn)
 
 for cs in range(cn):
     # for each case we have one (alpha_h, alpha_v) pair
-    rng_nzc = np.random.default_rng(21)  # non-zero count 
+    rng_nzc = np.random.default_rng(nz_seed)  # non-zero count 
+    # here alpha_h only consider upper triangle terms 
     alpha_h = rng_nzc.integers(nmin_h, nmax_h + 1)
     alpha_v = rng_nzc.integers(nmin_v, nmax_v + 1)
 
-    print("alpha_h, alpha_v = ", alpha_h, alpha_v)
+    log_path =  dir_  + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(alpha_h) + "_" + str(alpha_v) + note  + ".txt"
 
-    master_rng = np.random.default_rng(123)  # pick any fixed master seed
+    os.makedirs(os.path.dirname(log_path) or ".", exist_ok=True)
+
+    log_file = open(log_path, "w", encoding="utf-8")
+    sys.stdout = Tee(sys.__stdout__, log_file)
+    sys.stderr = Tee(sys.__stderr__, log_file)
+
+    print("alpha_h, alpha_v = ", alpha_h, alpha_v)
+    print('\t')
+
+    master_rng = np.random.default_rng(mst_seed)  # pick any fixed master seed
     seeds = master_rng.integers(0, 2**32 - 1, size=sn, dtype=np.uint32)
+
+    print("seed for nonzero terms = ", nz_seed)
+    print("master seed =  ", mst_seed)
+    print("seed for coefficient generation:", seeds)
+    print('\t')
 
 
     for s in range(sn):
