@@ -182,7 +182,7 @@ def sparsity(hind, Vind, nf2):
     return delta 
     
 def AppendH(U, ind, theta, trott_order, nf2):
-
+               
     if(trott_order == 2):
         hcnt = 0
         for i in range(len(ind[0])):
@@ -192,28 +192,44 @@ def AppendH(U, ind, theta, trott_order, nf2):
                 b1[ind[1][i]] = 1
                 U.append([theta, b1])
                 hcnt += 1
-
         for i in range(len(U)-1, len(U) - hcnt -1, -1):
-            U.append(U[i])     
+            U.append(U[i])   
+
+    elif(trott_order == 1):
+        for i in range(len(ind[0])):
+            b1 = np.zeros(nf2)
+            if(ind[0][i] < ind[1][i]):
+                b1[ind[0][i]] = 1
+                b1[ind[1][i]] = 1
+                U.append([2 * theta, b1])
+
 
 def AppendV(U, ind, theta, trott_order, nf2):
-
-    if(trott_order ==2):
+    
+    if(trott_order == 2):
         for i in range(len(ind[0])):
             b2 = np.zeros(nf2)
-            b2[ind[0][i]] = (b2[ind[0][i]]+ 1) % 2
-            b2[ind[1][i]] = (b2[ind[1][i]]+ 1) % 2
-            b2[ind[2][i]] = (b2[ind[2][i]]+ 1) % 2
-            b2[ind[3][i]] = (b2[ind[3][i]]+ 1) % 2
-
-            # parity check? 
+            # assume that we only have distinct and non-decreasing indices 
+            b2[ind[0][i]] = 1
+            b2[ind[1][i]] = 1
+            b2[ind[2][i]] = 1
+            b2[ind[3][i]] = 1
 
             U.append([theta, b2])
-
         cur_pos = len(U)
         for i in range(cur_pos-1, cur_pos- len(ind[0]) - 1, -1):
             U.append(U[i])
 
+    elif(trott_order == 1):
+        for i in range(len(ind[0])):
+            b2 = np.zeros(nf2)
+            b2[ind[0][i]] = 1
+            b2[ind[1][i]] = 1
+            b2[ind[2][i]] = 1
+            b2[ind[3][i]] = 1
+
+
+            U.append([2 * theta, b2])
 """
 Majorana Propagation for 1 Fermionic gate
 """
@@ -354,11 +370,12 @@ def ExpectVal(Input_Node, lenN, rho):
 
         
 # First change H' into new basis, then write in the form of fermionic gates
-def BasisChange(N, h, V, dt, bdry):
+def BasisChange(N, h, V, dt, trott_order, bdry):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
     # dt: time per timestep
+    # trott_order: trotterization order 
 	# output: tensor after contraction with R^T, resulting fermionic gate
 
 
@@ -377,32 +394,50 @@ def BasisChange(N, h, V, dt, bdry):
 	
     coef_sh = V4.shape
     U = []
+    if(trott_order == 2):
+        for k in range(coef_sh[0]):
+            for l in range(coef_sh[1]):
+                for m in range(coef_sh[2]):
+                    for n in range(coef_sh[3]):
+                        b = np.zeros(2 * N)
+                        if(V4[k][l][m][n] !=0): # maybe apply a threshold for coefficient
+                            
+                            theta = V4[k][l][m][n] * dt  #second order trotterization
+                            b[k] += 1
+                            b[l] += 1
+                            b[m] += 1
+                            b[n] += 1
+                            for q in range(2 * N):
+                                b[q] = b[q] % 2
+                            
+                            theta = theta * perm_parity(k, l , m, n)
+                            U.append([theta, b])
 
-    for k in range(coef_sh[0]):
-        for l in range(coef_sh[1]):
-            for m in range(coef_sh[2]):
-                for n in range(coef_sh[3]):
-                    b = np.zeros(2 * N)
-                    if(V4[k][l][m][n] !=0): # maybe apply a threshold for coefficient
-                        
-                        theta = V4[k][l][m][n] * dt  #second order trotterization
-                        b[k] += 1
-                        b[l] += 1
-                        b[m] += 1
-                        b[n] += 1
-                        for q in range(2 * N):
-                            b[q] = b[q] % 2
-                        
-                        theta = theta * perm_parity(k, l , m, n)
-                        U.append([theta, b])
+        for i in range(len(U)-1, -1, -1):
+            U.append(U[i])
 
-    for i in range(len(U)-1, -1, -1):
-        U.append(U[i])
-    
+    elif(trott_order == 1):
+        for k in range(coef_sh[0]):
+            for l in range(coef_sh[1]):
+                for m in range(coef_sh[2]):
+                    for n in range(coef_sh[3]):
+                        b = np.zeros(2 * N)
+                        if(V4[k][l][m][n] !=0): # maybe apply a threshold for coefficient
+                            
+                            theta = 2 * V4[k][l][m][n] * dt  
+                            b[k] += 1
+                            b[l] += 1
+                            b[m] += 1
+                            b[n] += 1
+                            for q in range(2 * N):
+                                b[q] = b[q] % 2
+                            
+                            theta = theta * perm_parity(k, l , m, n)
+                            U.append([theta, b])
 
     return V4, U
 
-def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
+def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
@@ -417,14 +452,8 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param):
     for i in range(n):
         if(i==0):
             bdry = True
-        V, U = BasisChange(N, h, V, dt, bdry) #coefficient in new basis
+        V, U = BasisChange(N, h, V, dt, trott_order, bdry) #coefficient in new basis
         #print("V_update= ", V)
-        #for j in range(nf2):
-            #for k in range(nf2):
-                #for m in range(nf2):
-                    #for l in range(nf2):
-                        #if(V[j][k][m][l]!=0):
-                            #print(j, k, m, l, V[j][k][m][l])
         #print("Fermionic gate (V)", U)
         #print("gate count", len(U))
         Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U)
@@ -566,10 +595,10 @@ def random_sparse_h(alpha, nf2, complex_coeff=False, seed=None):
 
     return pairs, h
 
-import numpy as np
+
 
 def random_sparse_v(alpha, nf2, complex_coeff=False, seed=None):
-    
+
     rng = np.random.default_rng(seed)
 
     # number of possible unique 4-tuples = C(nf2, 4)

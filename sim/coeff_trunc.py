@@ -50,7 +50,7 @@ for coef_tr in range(coef_st, coef_end, -1):
 
     # Rotated Majorana Propogation
     #tic = time.perf_counter()
-    Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param)
+    Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param, trott)
     #toc = time.perf_counter()
     #print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 

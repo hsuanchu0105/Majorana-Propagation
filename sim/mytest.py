@@ -414,6 +414,29 @@ def random_sparse_v(nf2, nmin=1, nmax=6, complex_coeff=False, seed=None):
 
 nf2 = 10
 n, pairs, v = random_sparse_v(nf2, nmin=1, nmax=6, complex_coeff=False, seed=0)
-print("n =", n)
-print("pairs =", pairs)
-print(v)
+#print("n =", n)
+#print("pairs =", pairs)
+#print(v)
+
+from matplotlib.ticker import MaxNLocator
+
+x = np.arange(1, 6)
+w = 0.075
+err_avg = np.array([1.1, 1.2, 3, 1.01, 2.5])
+err_std= np.array([1.1, 0.1, 0.2, 0.3, 1])
+err_avg_r = np.array([1, 3, 3, 1.21, 2.1])
+err_std_r= np.array([0.2, 0.5, 0.7, 0.1, 1.3])
+
+plt.figure()
+plt.errorbar(x+w, err_avg, yerr=err_std, fmt='o', capsize=3, label='MP')
+plt.errorbar(x-w, err_avg_r, yerr=err_std_r, fmt='o', capsize=3, label='ROT')
+plt.xticks(x)
+plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+
+plt.xlabel('index')
+plt.ylabel('relative error')
+plt.yscale('log')  # optional
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()
