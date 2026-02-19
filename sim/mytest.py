@@ -419,7 +419,7 @@ n, pairs, v = random_sparse_v(nf2, nmin=1, nmax=6, complex_coeff=False, seed=0)
 #print(v)
 
 from matplotlib.ticker import MaxNLocator
-
+'''
 x = np.arange(1, 6)
 w = 0.075
 err_avg = np.array([1.1, 1.2, 3, 1.01, 2.5])
@@ -429,7 +429,7 @@ err_std_r= np.array([0.2, 0.5, 0.7, 0.1, 1.3])
 
 plt.figure()
 plt.errorbar(x+w, err_avg, yerr=err_std, fmt='o', capsize=3, label='MP')
-plt.errorbar(x-w, err_avg_r, yerr=err_std_r, fmt='o', capsize=3, label='ROT')
+plt.errorbar(x-w, err_avg_r, yerr=err_std_r, fmt='o', capsize=3, label='RMP')
 plt.xticks(x)
 plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
 
@@ -440,3 +440,77 @@ plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.tight_layout()
 plt.show()
+'''
+
+cn = 5
+err =  np.array([[6.39440951e-02, 5.24031906e-02, 4.75979982e-02, 1.15481245e-01,
+                  7.77000731e-02, 4.55778406e-02, 7.51631946e-02, 6.46166150e-02,
+                  1.80583109e-01, 5.50637061e-02 ],
+                  [6.89167745e-02, 9.94914065e-02, 6.25900454e-02, 1.14466246e-01,
+                   9.49736297e-02, 5.12793740e-02, 7.37655056e-02, 6.47433122e-02,
+                   2.42098722e-01, 7.72792656e-02 ],
+                   [3.83555258e-02, 3.47828062e-02, 9.42437641e-03, 1.99687940e-02,
+                    3.46783859e-02, 1.27318642e-02, 1.39843295e-02, 1.35557937e-02,
+                    6.90697991e-02, 3.55359644e-19],
+                    [3.83555258e-02, 3.47828062e-02, 9.42437641e-03, 1.99687940e-02,
+                     3.46783859e-02, 1.27318642e-02, 1.39843295e-02, 1.35557937e-02,
+                     6.90697991e-02, 3.55359644e-19],
+                     [6.37998927e-02, 9.66792108e-02, 3.93090221e-02, 6.92919886e-02,
+                      2.54814215e-01, 3.45147612e-02, 8.03015251e-02, 8.68825272e-02,
+                      2.42487382e-01, 3.66757770e-02]])
+err_r =  np.array([[8.65790330e-05, 1.23065825e-03, 4.46016169e-05, 5.20715984e-05,
+                    4.20660786e-03, 4.60711018e-04, 1.66853137e-04, 1.74092931e-04,
+                    9.15929394e-06, 2.55855111e-03],
+                    [3.27815766e-03, 7.23584130e-04, 7.42867715e-04, 6.00350019e-05,
+                     7.21557864e-03, 3.25827801e-03, 3.92503331e-04, 2.99218588e-04,
+                     2.15127946e-04, 4.36885649e-03],
+                     [7.68375030e-05, 7.23274474e-05, 7.57131207e-05, 2.23387297e-05,
+                      2.92007965e-03, 1.16325002e-06, 1.21110998e-04, 5.07911832e-05,
+                      8.41640008e-08, 2.22044889e-16],
+                      [7.68375030e-05, 7.23274474e-05, 7.57131207e-05, 2.23387297e-05,
+                       2.92007965e-03, 1.16325002e-06, 1.21110998e-04, 5.07911832e-05,
+                       8.41640008e-08, 2.22044889e-16],
+                       [3.62248876e-03, 9.10428539e-03, 4.43539499e-05, 6.15266214e-03,
+                        1.09301275e-03, 1.68754750e-03, 8.60595345e-03, 2.84358944e-04,
+                        9.72168648e-04, 3.13780596e-04]])
+
+log_err = np.log(err)  
+mu = log_err.mean(axis=1)  # ln(\mu_g)
+sigma = log_err.std(axis=1)  # ln(\sigma_g)
+# geometric mean 
+mean_geo_mp = np.exp(mu) 
+low = np.exp(mu-sigma) 
+high = np.exp(mu+sigma) 
+yerr_mp = np.vstack([mean_geo_mp - low, high - mean_geo_mp])
+
+
+log_err_r = np.log(err_r)
+mu2 = log_err_r.mean(axis=1) 
+sigma2 = log_err_r.std(axis=1) 
+mean_geo_r = np.exp(mu2)
+low2 = np.exp(mu2-sigma2) 
+high2 = np.exp(mu2+sigma2) 
+yerr_r = np.vstack([mean_geo_r - low2, high2 - mean_geo_r])
+
+
+w = 0.075
+x = np.arange(1, cn + 1)
+
+plt.figure()
+plt.errorbar(x - w, mean_geo_mp, yerr=yerr_mp, fmt='o', capsize=3, label='MP')
+plt.errorbar(x + w, mean_geo_r,  yerr=yerr_r,  fmt='o', capsize=3, label='RMP')
+
+plt.yscale('log')
+plt.xticks(x)
+plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+plt.xlabel('Case')
+plt.ylabel('Relative error')
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.tight_layout()
+plt.title("Geometric mean and standard deviation for random coefficients")
+
+plt.savefig('0219.png', dpi=200, bbox_inches="tight")
+plt.show()
+
+

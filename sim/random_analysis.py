@@ -23,9 +23,10 @@ dir_ = f"ta{date.today():%m%d}/"
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 note = "rd_ana"
 
-#nz_seed = 21
-mst_seed = 123
-cs_seed = 15553
+
+cs_seed = 15553 # seed for non-zero terms 
+mst_seed = 12329 # seed for coefficients
+
 
 nmin_h=1
 nmax_h=3
@@ -39,15 +40,12 @@ nmax_v=3
 
 err = np.zeros((cn, sn))
 err_rot = np.zeros((cn, sn))
-err_avg = np.zeros(cn)
-err_std = np.zeros(cn)
-err_avg_r = np.zeros(cn)
-err_std_r = np.zeros(cn)
+
 
 alpha_h = np.zeros(cn, dtype = int)
 alpha_v = np.zeros(cn, dtype = int)
 
-mcs_rng = np.random.default_rng(cs_seed)  # pick any fixed master seed
+mcs_rng = np.random.default_rng(cs_seed)  
 cs_seeds = mcs_rng.integers(0, 2**32 - 1, size=cn, dtype=np.uint32)
 
 for cs in range(cn):
@@ -122,7 +120,7 @@ for cs in range(cn):
 
         # Rotated Majorana Propogation
         tic = time.perf_counter()
-        Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param)
+        Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param, trott)
         toc = time.perf_counter()
         print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
@@ -168,21 +166,12 @@ for cs in range(cn):
 
     
 
-    err_avg[cs] = err[cs].mean()
-    #sample std
-    err_std[cs] = err[cs].std(ddof=1)
-    err_avg_r[cs] = err_rot[cs].mean()
-    err_std_r[cs] = err_rot[cs].std(ddof=1)
 
 print('\t')
 print("relative error = ", err)
 print("relative erorr (rot) = ", err_rot)
 print('\t')
 
-print("avg error = ", err_avg)
-print("std = ", err_std)
-print("avg error (rot)= ", err_avg_r)
-print("std (rot) = ", err_std_r)
 
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
 
@@ -192,25 +181,41 @@ filename =  dir_  + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(nf) + "_
 
 
 
+log_err = np.log(err)  
+mu = log_err.mean(axis=1)  # ln(\mu_g)
+sigma = log_err.std(axis=1)  # ln(\sigma_g)
+# geometric mean 
+mean_geo_mp = np.exp(mu) 
+low = np.exp(mu-sigma) 
+high = np.exp(mu+sigma) 
+yerr_mp = np.vstack([mean_geo_mp - low, high - mean_geo_mp])
 
-x = np.arange(1, cn+1)          
+
+log_err_r = np.log(err_rot)
+mu2 = log_err_r.mean(axis=1) 
+sigma2 = log_err_r.std(axis=1) 
+mean_geo_r = np.exp(mu2)
+low2 = np.exp(mu2-sigma2) 
+high2 = np.exp(mu2+sigma2) 
+yerr_r = np.vstack([mean_geo_r - low2, high2 - mean_geo_r])
+
+
 w = 0.075
-
+x = np.arange(1, cn + 1)
 
 plt.figure()
-plt.errorbar(x-w, err_avg, yerr=err_std, fmt='o', capsize=3, label='MP')
-plt.errorbar(x+w, err_avg_r, yerr=err_std_r, fmt='o', capsize=3, label='RMP')
+plt.errorbar(x - w, mean_geo_mp, yerr=yerr_mp, fmt='o', capsize=3, label='MP')
+plt.errorbar(x + w, mean_geo_r,  yerr=yerr_r,  fmt='o', capsize=3, label='RMP')
+
+plt.yscale('log')
 plt.xticks(x)
 plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
-
-
-plt.xlabel('index')
-plt.ylabel('relative error')
-plt.yscale('log')  # optional
+plt.xlabel('Case')
+plt.ylabel('Relative error')
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.tight_layout()
-
+plt.title("Geometric mean and standard deviation for random coefficients")
 
 os.makedirs(os.path.dirname(filename), exist_ok=True)
 plt.savefig(filename, dpi=200, bbox_inches="tight")
