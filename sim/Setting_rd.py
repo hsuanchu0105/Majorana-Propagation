@@ -21,7 +21,7 @@ init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1])
 M1= MajoranaOp(nf2, init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
 
-bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1])
+bin2 = np.array([0, 0, 0, 0, 1, 1, 1, 1])
 #bin2 = np.array([0, 0, 1, 1, 0, 0])
 M2= MajoranaOp(nf2, bin2)
 N2 = Node(bin2, 1j**M2.rb())

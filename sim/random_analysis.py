@@ -24,14 +24,14 @@ ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 note = "rd_ana"
 
 
-cs_seed = 15553 # seed for non-zero terms 
-mst_seed = 12329 # seed for coefficients
+cs_seed = 155533 # seed for non-zero terms 
+mst_seed = 123298 # seed for coefficients
 
 
 nmin_h=1
-nmax_h=3
+nmax_h=8
 nmin_v=1
-nmax_v=3
+nmax_v=8
 
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
@@ -69,11 +69,10 @@ for cs in range(cn):
 
     master_rng = np.random.default_rng(mst_seed)  # pick any fixed master seed
     seeds = master_rng.integers(0, 2**32 - 1, size=sn, dtype=np.uint32)
-
     
-    print("seed for nonzero terms = ", cs_seeds)
-    print("master seed =  ", mst_seed)
-    print("seed for coefficient generation:", seeds)
+    print("seed for nonzero terms = ", cs_seed)
+    print("seed for coefficients =  ", mst_seed)
+    #print("seed for coefficient generation:", seeds)
     print('\t')
 
 

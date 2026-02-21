@@ -293,6 +293,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     lv_st = 0               
     lv_end = len(Nin) 
     current_pos = len(Nin) - 1
+    length_distr(Nin[lv_st:lv_end], 0)
 
     '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
@@ -321,7 +322,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
                 Nin.append(N)
                 current_pos += 1
             else:
-                
+                #print("branching")
                 coeff1, coeff2, bnew = M1Prg(Nin[j], U[i][0], U[i][1])
                 #print(coeff2)
                 #print(PpgList[j].b)
@@ -347,6 +348,8 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
         for k in range(lv_st, lv_end):
             print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
         """
+        if(i % 10 == 9):
+            length_distr(Nin[lv_st:lv_end], i+1)
 
     Nin = Nin[lv_st: lv_end]
 
@@ -627,3 +630,28 @@ def random_sparse_v(alpha, nf2, complex_coeff=False, seed=None):
         v[j, k, l, m] = val
 
     return tuples, v
+
+def length_distr(NodeList, level):
+    nf2 = len(NodeList[0].b)
+    lenN = len(NodeList) # number of nodes at this level
+    print("number of nodes at current level = ", lenN)
+    hist = np.zeros(nf2)
+    for i in range(lenN):
+        for j in range(1, nf2+1):
+            if(sum(NodeList[i].b) == j):
+                hist[j-1] += 1
+                break
+    
+    
+    x = np.arange(1, nf2 + 1)                        
+
+    plt.figure()
+    plt.bar(x, hist, width=0.9, align="center", edgecolor="black")
+    plt.xticks(x) 
+    plt.xlabel("length")
+    plt.ylabel("number")
+    plt.title(f'Length Distribution at {level}th level')
+    plt.grid(True, linestyle="--", linewidth=0.5)
+    plt.tight_layout()
+    plt.show()
+                

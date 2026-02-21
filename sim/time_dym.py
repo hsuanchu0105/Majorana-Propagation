@@ -1,9 +1,9 @@
 from MajProp import * 
-from Setting import *
+from Setting_td import *
 import time 
 from datetime import date
-
-
+from datetime import datetime 
+from pathlib import Path
 
 
 
@@ -23,10 +23,10 @@ rel_rmp = np.zeros(n - ts_st)
 mp_trott = np.zeros(n - ts_st)
 
 
-for ts in range(1, n):
+for ts in range(n,n+1):
     
 
-    trunc_param = np.array([8, 1e-8])
+    trunc_param = np.array([len_trunc, coeff_trunc])
     U = []
 
     AppendH(U, h_ind, dt, trott, nf2)
@@ -51,10 +51,10 @@ for ts in range(1, n):
     print(f"Majorana Propagation : {toc - tic:0.4f} seconds")
 
     # Rotated Majorana Propogation
-    #tic = time.perf_counter()
-    Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param)
-    #toc = time.perf_counter()
-    #print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
+    tic = time.perf_counter()
+    Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param, trott)
+    toc = time.perf_counter()
+    print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
     for node in Output_Node:
         #print(sum(node.b))
@@ -64,6 +64,7 @@ for ts in range(1, n):
     obexp = np.zeros(2**nf, dtype = complex)
     rexp = np.zeros(2**nf, dtype = complex)
     dexp = np.zeros(2**nf, dtype = complex)
+    trottexp = np.zeros(2**nf, dtype = complex)
 
     # transform into binary representation |n> = |n_1 n_2 n_3 \cdots n_{nf} >
     for i in range(2**nf):
@@ -83,12 +84,12 @@ for ts in range(1, n):
         rexp[i] = Rotated_ExpectVal(Node_out , h, dt, ts, rho_st, nf)
         #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
-        #dexp[i] = DirectExp(init_len, init_maj, V, h, ts * dt, i, nf, nf2)
+        dexp[i] = DirectExp(init_len, init_maj, V, h, ts * dt, i, nf, nf2)
         
 
 
     
-    Trotterization(dexp, init_len, init_maj, U, nf)
+    Trotterization(trottexp, init_len, init_maj, U, nf)
 
     # 2-norm 
     #mp[ts - ts_st] = np.linalg.norm(obexp)
@@ -96,16 +97,24 @@ for ts in range(1, n):
     #ana[ts - ts_st] = np.linalg.norm(dexp)
     #rel_mp[ts - ts_st] = np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
     #rel_rmp[ts - ts_st] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
-    mp_trott[ts - ts_st] = np.linalg.norm(obexp - dexp)
+    mp_trott[ts - ts_st] = np.linalg.norm(obexp - trottexp)
     
     ErrorPrint(dexp, obexp, rexp, 2)
 
+#'''
+dir_ = f"ta{date.today():%m%d}/"
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+# fermionic mode + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + len_trunc + coeff_trunc + trotter order + note(optional)
+prefix = dir_ + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + "_" + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(trott) 
 
-# truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
-trunc_met = "td"
+fname =  prefix + ".csv"
+path = Path(fname)   # any nested path is fine
+path.parent.mkdir(parents=True, exist_ok=True)
+#np.savetxt(path, mp_trott, delimiter=",")
+#'''
 dir_ = f"plot{date.today():%m%d}/"
-note = "_ct_1e-8_trott"
-filename =  dir_ + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
+prefix = dir_ + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + "_" + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(trott) 
+pltname =  prefix + ".png"
 
 
 #'''
@@ -129,8 +138,8 @@ plt.title("Comparison between Majorana Propagation and Trotterization")
 plt.tight_layout()
 
 
-os.makedirs(os.path.dirname(filename), exist_ok=True)
-plt.savefig(filename, dpi=200, bbox_inches="tight")
+os.makedirs(os.path.dirname(pltname), exist_ok=True)
+#plt.savefig(pltname, dpi=200, bbox_inches="tight")
 plt.show()
 '''
 
