@@ -293,8 +293,12 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     lv_st = 0               
     lv_end = len(Nin) 
     current_pos = len(Nin) - 1
-    length_distr(Nin[lv_st:lv_end], 0)
+    #length_distr(Nin[lv_st:lv_end], 0)
 
+    sampled_levels = []
+    counts_list = []
+    stride = 5
+    nf2 = len(Nin[0].b)
     '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
@@ -302,6 +306,8 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     for k in range(lv_st, lv_end):
             print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
     '''
+
+    
 
     for i in range(L):
         for j in range(lv_st, lv_end):
@@ -348,8 +354,14 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
         for k in range(lv_st, lv_end):
             print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
         """
-        if(i % 10 == 9):
-            length_distr(Nin[lv_st:lv_end], i+1)
+        # record every 'stride' levels
+        if (i % stride) == stride - 1:
+            hist = histogram_from_nodes(Nin[lv_st: lv_end], nf2)
+            sampled_levels.append(i+1)
+            counts_list.append(hist)
+        counts = np.vstack(counts_list) if counts_list else np.zeros((0, nf2), dtype=int)
+    if counts_list:
+        plot_length_counts(sampled_levels, counts, nf2, logy=False)
 
     Nin = Nin[lv_st: lv_end]
 
@@ -631,27 +643,59 @@ def random_sparse_v(alpha, nf2, complex_coeff=False, seed=None):
 
     return tuples, v
 
-def length_distr(NodeList, level):
-    nf2 = len(NodeList[0].b)
-    lenN = len(NodeList) # number of nodes at this level
-    print("number of nodes at current level = ", lenN)
-    hist = np.zeros(nf2)
-    for i in range(lenN):
-        for j in range(1, nf2+1):
-            if(sum(NodeList[i].b) == j):
-                hist[j-1] += 1
-                break
-    
-    
+
+def histogram_from_nodes(NodeList, nf2):
+    """Return counts for j=1..nf2 where j = sum(node.b)."""
+    hist = np.zeros(nf2, dtype=int)
+    for node in NodeList:
+        j = int(np.sum(node.b))          
+        if 1 <= j <= nf2:
+            hist[j - 1] += 1
+    return hist
+
+
+def histogram_from_nodes(NodeList, nf2):
+    """Return counts for j=1..nf2 where j = sum(node.b)."""
+    hist = np.zeros(nf2, dtype=int)
+    for node in NodeList:
+        j = int(np.sum(node.b))          # or sum(node.b)
+        if 1 <= j <= nf2:
+            hist[j - 1] += 1
+    return hist
+
+
+
+
+def plt_hist(hist, nf2, level):  
     x = np.arange(1, nf2 + 1)                        
 
     plt.figure()
     plt.bar(x, hist, width=0.9, align="center", edgecolor="black")
     plt.xticks(x) 
-    plt.xlabel("length")
-    plt.ylabel("number")
+    plt.xlabel("Majorana monomial length")
+    plt.ylabel("Count")
     plt.title(f'Length Distribution at {level}th level')
     plt.grid(True, linestyle="--", linewidth=0.5)
     plt.tight_layout()
     plt.show()
                 
+
+
+def plot_length_counts(sampled_levels, counts, nf2, logy=False):
+    plt.figure()
+    for j in range(1, nf2 + 1):
+        plt.plot(sampled_levels, counts[:, j - 1], label=f"j={j}")
+
+    plt.xlabel("Level")
+    plt.ylabel("Count")
+    if logy:
+        plt.yscale("log")
+
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+
+    # Legend is only readable for small nf2
+    if nf2 <= 12:
+        plt.legend(fontsize=8, ncol=2)
+
+    plt.tight_layout()
+    plt.show()

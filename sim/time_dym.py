@@ -99,7 +99,7 @@ for ts in range(n,n+1):
     #rel_rmp[ts - ts_st] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
     mp_trott[ts - ts_st] = np.linalg.norm(obexp - trottexp)
     
-    ErrorPrint(dexp, obexp, rexp, 2)
+    #ErrorPrint(dexp, obexp, rexp, 2)
 
 #'''
 dir_ = f"ta{date.today():%m%d}/"
