@@ -5,6 +5,8 @@ import functools
 from itertools import combinations
 import matplotlib.pyplot as plt
 import os
+from datetime import date
+from pathlib import Path
 
 
 # Pauli matrices
@@ -273,7 +275,7 @@ def M1Prg(Nin, theta_ex, b_ex):
 """
 Main function of Majorana Propagation 
 """
-def MajoranaPropagation(trunc, Nin, lenU, U):
+def MajoranaPropagation(trunc, Nin, lenU, U, save_hist = False, filesuffix = ""):
     # trunc: List of truncation parameters [length truncation, coefficient truncation]
     # Nin: List of input nodes 
     # lenU: width of Fermionic gate 
@@ -283,9 +285,11 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
     # parameters for truncation
     length_trunc = trunc[0]
     coeff_thres = trunc[1]
-
+    
     
     Nin = list(Nin) #shallow copy
+    nf2 = len(Nin[0].b)
+
     # parameters of Fermionic circuit U
     L = lenU                   
     
@@ -297,8 +301,14 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
 
     sampled_levels = []
     counts_list = []
-    stride = 5
-    nf2 = len(Nin[0].b)
+    # level 0
+    hist = histogram_from_nodes(Nin[lv_st: lv_end], nf2)
+    sampled_levels.append(0)
+    counts_list.append(hist)
+
+
+    stride = 10
+    
     '''
     print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
     print("Level 0 :")
@@ -359,10 +369,21 @@ def MajoranaPropagation(trunc, Nin, lenU, U):
             hist = histogram_from_nodes(Nin[lv_st: lv_end], nf2)
             sampled_levels.append(i+1)
             counts_list.append(hist)
-        counts = np.vstack(counts_list) if counts_list else np.zeros((0, nf2), dtype=int)
+    
+    counts = np.vstack(counts_list) if counts_list else np.zeros((0, nf2), dtype=int)
     if counts_list:
         plot_length_counts(sampled_levels, counts, nf2, logy=False)
 
+    
+    
+    if(save_hist):
+        dir_ = f"ta{date.today():%m%d}/"
+        prefix = dir_ + filesuffix
+        fname =  prefix + ".csv"
+        path = Path(fname)  
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # still need to consider the case gate number % stride != 0
+        np.savetxt(path, counts_list, delimiter=",")
     Nin = Nin[lv_st: lv_end]
 
     return Nin
@@ -470,8 +491,8 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order):
         V, U = BasisChange(N, h, V, dt, trott_order, bdry) #coefficient in new basis
         #print("V_update= ", V)
         #print("Fermionic gate (V)", U)
-        #print("gate count", len(U))
-        Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U)
+        print(f"gate count at step {i}: {len(U)}")
+        Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, False, "timestep" + str(i))
 
     return Node_next
 
@@ -684,9 +705,9 @@ def plt_hist(hist, nf2, level):
 def plot_length_counts(sampled_levels, counts, nf2, logy=False):
     plt.figure()
     for j in range(1, nf2 + 1):
-        plt.plot(sampled_levels, counts[:, j - 1], label=f"j={j}")
+        plt.plot(sampled_levels, counts[:, j - 1], label=f"len={j}")
 
-    plt.xlabel("Level")
+    plt.xlabel("Gate")
     plt.ylabel("Count")
     if logy:
         plt.yscale("log")
@@ -699,3 +720,5 @@ def plot_length_counts(sampled_levels, counts, nf2, logy=False):
 
     plt.tight_layout()
     plt.show()
+
+
