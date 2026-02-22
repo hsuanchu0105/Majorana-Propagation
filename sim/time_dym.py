@@ -108,7 +108,7 @@ ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 prefix = dir_ + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + "_" + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(trott) 
 
 fname =  prefix + ".csv"
-path = Path(fname)   # any nested path is fine
+path = Path(fname)   
 path.parent.mkdir(parents=True, exist_ok=True)
 #np.savetxt(path, mp_trott, delimiter=",")
 #'''

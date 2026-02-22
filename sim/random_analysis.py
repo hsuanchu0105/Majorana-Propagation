@@ -119,7 +119,7 @@ for cs in range(cn):
 
         # Rotated Majorana Propogation
         tic = time.perf_counter()
-        Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param, trott)
+        Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param, trott, hist_save)
         toc = time.perf_counter()
         print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 

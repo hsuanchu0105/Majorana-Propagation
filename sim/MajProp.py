@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import os
 from datetime import date
 from pathlib import Path
+from tqdm import tqdm
 
 
 # Pauli matrices
@@ -319,7 +320,8 @@ def MajoranaPropagation(trunc, Nin, lenU, U, save_hist = False, filesuffix = "")
 
     
 
-    for i in range(L):
+    #for i in range(L):
+    for i in tqdm(range(L), total=L, desc="Running"):
         for j in range(lv_st, lv_end):
             if(len(Nin[j].b) < len(U[i][1])):
                 long_arr = U[i][1]
@@ -377,7 +379,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U, save_hist = False, filesuffix = "")
     
     
     if(save_hist):
-        dir_ = f"ta{date.today():%m%d}/"
+        dir_ = f"len_distr_{date.today():%m%d}/"
         prefix = dir_ + filesuffix
         fname =  prefix + ".csv"
         path = Path(fname)  
@@ -473,7 +475,7 @@ def BasisChange(N, h, V, dt, trott_order, bdry):
 
     return V4, U
 
-def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order):
+def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsave):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
@@ -492,7 +494,7 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order):
         #print("V_update= ", V)
         #print("Fermionic gate (V)", U)
         print(f"gate count at step {i}: {len(U)}")
-        Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, False, "timestep" + str(i))
+        Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, histsave, "timestep" + str(i))
 
     return Node_next
 
@@ -675,14 +677,6 @@ def histogram_from_nodes(NodeList, nf2):
     return hist
 
 
-def histogram_from_nodes(NodeList, nf2):
-    """Return counts for j=1..nf2 where j = sum(node.b)."""
-    hist = np.zeros(nf2, dtype=int)
-    for node in NodeList:
-        j = int(np.sum(node.b))          # or sum(node.b)
-        if 1 <= j <= nf2:
-            hist[j - 1] += 1
-    return hist
 
 
 

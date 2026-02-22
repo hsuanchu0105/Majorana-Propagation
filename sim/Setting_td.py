@@ -13,13 +13,16 @@ trott = 2 # trotterization order
 len_trunc = 8
 coeff_trunc = 1e-8
 
+rmp_hist = True # save the length distribution histogram in RMP
+
 h = np.zeros((nf2, nf2))
 
 h[0][1] = 1 
 h[0][2] = 1
 #h[0][3] = 1
 #h[0][4] = 1
-#h[1][5] = 1
+h[2][4] = 1
+h[1][5] = 1
 #h[1][5] = 0.2
 #h[2][3] = 0.5
 
@@ -31,7 +34,7 @@ V[1][2][3][4] = 0.5
 #V[1][3][4][5] = 0.1
 #V[0][1][3][4] = -3
 #V[0][1][4][6] = 1
-#V[0][1][6][7] = 8
+#V[0][1][6][7] = 1
 
 
 h_inds = np.nonzero(h) #seed 
@@ -66,17 +69,18 @@ init_bin = np.array([1, 1, 0, 0, 0, 0, 0, 0])
 M1= MajoranaOp(nf2, init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
 
-bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1])
-#bin2 = np.array([0, 0, 1, 1, 0, 0])
+#bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1])
+bin2 = np.array([0, 0, 1, 1, 0, 0, 0, 0])
 M2= MajoranaOp(nf2, bin2)
 N2 = Node(bin2, 1j**M2.rb())
 
-bin3 = np.array([1, 1, 1, 1, 0, 0, 0, 0])
-#bin3 = np.array([0, 0, 1, 1, 1, 1])
+#bin3 = np.array([1, 1, 1, 1, 0, 0, 0, 0])
+bin3 = np.array([0, 0, 0, 0, 1, 0, 1, 0])
 M3= MajoranaOp(nf2, bin3)
 N3 = Node(bin3, 1j**M3.rb())
 
-bin4 = np.array([1, 1, 1, 1, 1, 1, 0, 0])
+#bin4 = np.array([1, 1, 1, 1, 1, 1, 0, 0])
+bin4 = np.array([0, 0, 0, 0, 0, 0 , 1, 1])
 M4= MajoranaOp(nf2, bin4)
 N4 = Node(bin4, 1j**M4.rb())
 

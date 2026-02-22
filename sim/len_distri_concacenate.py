@@ -38,9 +38,9 @@ t = np.arange(counts_all.shape[0])  # snapshot index across all timesteps
 
 plt.figure()
 for j in range(nf2):
-    plt.plot(t, counts_all[:, j], label=f"j={j+1}")
+    plt.plot(t, counts_all[:, j], label=f"len={j+1}")
 
-plt.xlabel("snapshot index (concatenated over timesteps)")
+plt.xlabel("snapshot index")
 plt.ylabel("count")
 plt.grid(True, which="both", linestyle="--", linewidth=0.5)
 
