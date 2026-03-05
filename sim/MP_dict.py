@@ -2,6 +2,7 @@ import numpy as np
 from collections import defaultdict
 import cmath
 from scipy.linalg import expm
+from tqdm import tqdm
 
 class Node:
     def __init__(self, b, c = 1):
@@ -189,15 +190,16 @@ def MajoranaPropagation(trunc, Nin, lenU, U, save_hist=False, filesuffix="", str
     sampled_levels = [0]
    
 
-    for i in range(L):
+    #for i in range(L):
+    for i in tqdm(range(L), total=L, desc="Running"):
         gate_coeff = U[i][0]
         gate_b = np.asarray(U[i][1], dtype=np.uint8)
 
         new_state = defaultdict(complex)
 
-        for key, coeff in state.items():
+        for key, coeff in state.items(): # returns a view object containing tuples of key and value pairs from state
             if coeff_thres and abs(coeff) < coeff_thres:
-                continue
+                continue # skip current iteration of for loop
 
             b = key_to_b(key)
 

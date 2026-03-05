@@ -2,6 +2,8 @@ import cmath
 import numpy as np
 from scipy.linalg import expm
 import functools
+from collections import defaultdict
+import cmath
 from itertools import combinations
 import matplotlib.pyplot as plt
 import os
@@ -58,6 +60,36 @@ def ObsToMtx(Input_Node, lenN, N, nf):
         Maj1 = functools.reduce(np.dot, factors, np.eye(2**N, dtype = complex))
         mtx += coeff * Maj1
     return mtx
+
+def b_to_key(b) -> tuple:
+    """Binary numpy array/list -> hashable key."""
+    return tuple(np.asarray(b, dtype=np.uint8).tolist())
+
+def key_to_b(key) -> np.ndarray:
+    """Key tuple -> numpy array."""
+    return np.fromiter(key, dtype=np.uint8)
+
+def commute_check(b_term, b_gate) -> bool:
+    b_term = np.asarray(b_term, dtype=np.uint8)
+    b_gate = np.asarray(b_gate, dtype=np.uint8)
+
+    if b_term.shape[0] < b_gate.shape[0]:
+        long_arr, short_arr = b_gate, b_term
+    else:
+        long_arr, short_arr = b_term, b_gate
+
+    short_padded = np.zeros_like(long_arr)
+    short_padded[:short_arr.shape[0]] = short_arr
+
+    return ((int(short_padded.sum()) * int(long_arr.sum()) - int(np.inner(short_padded, long_arr))) % 2) == 0
+
+def histogram_from_state(state, nf2):
+    hist = np.zeros(nf2, dtype=int)
+    for key in state.keys():
+        j = sum(key)
+        if 1 <= j <= nf2:
+            hist[j - 1] += 1
+    return hist
 
 def DirectExp(init_len, init_maj, v, h, t, i, nf, nf2):
 
@@ -276,120 +308,57 @@ def M1Prg(Nin, theta_ex, b_ex):
 """
 Main function of Majorana Propagation 
 """
-def MajoranaPropagation(trunc, Nin, lenU, U, save_hist = False, filesuffix = ""):
-    # trunc: List of truncation parameters [length truncation, coefficient truncation]
-    # Nin: List of input nodes 
-    # lenU: width of Fermionic gate 
-    # U: Fermionic gate 
-    # output: 
-
-    # parameters for truncation
+def MajoranaPropagation(trunc, Nin, lenU, U, save_hist=False, filesuffix="", stride=10):
     length_trunc = trunc[0]
-    coeff_thres = trunc[1]
-    
-    
-    Nin = list(Nin) #shallow copy
+    coeff_thres  = trunc[1]
+
     nf2 = len(Nin[0].b)
+    L = lenU
 
-    # parameters of Fermionic circuit U
-    L = lenU                   
-    
-    # index bookkeeping of current level (lv_end exclusive)
-    lv_st = 0               
-    lv_end = len(Nin) 
-    current_pos = len(Nin) - 1
-    #length_distr(Nin[lv_st:lv_end], 0)
+    # state: key(tuple(b)) -> coefficient
+    state = defaultdict(complex)
+    for node in Nin:
+        state[b_to_key(node.b)] += node.c
 
-    sampled_levels = []
-    counts_list = []
-    # level 0
-    hist = histogram_from_nodes(Nin[lv_st: lv_end], nf2)
-    sampled_levels.append(0)
-    counts_list.append(hist)
+    sampled_levels = [0]
+   
 
+    #for i in range(L):
+    for i in tqdm(range(L), total=L, desc="Running"):
+        gate_coeff = U[i][0]
+        gate_b = np.asarray(U[i][1], dtype=np.uint8)
 
-    stride = 10
-    
-    '''
-    print("length threshold = ", length_trunc, ", coefficient threshold = ", coeff_thres)
-    print("Level 0 :")
-    #print("input length = ", len(Nin))
-    for k in range(lv_st, lv_end):
-            print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
-    '''
+        new_state = defaultdict(complex)
 
-    
+        for key, coeff in state.items(): # returns a view object containing tuples of key and value pairs from state
+            if coeff_thres and abs(coeff) < coeff_thres:
+                continue # skip current iteration of for loop
 
-    for i in range(L):
-    #for i in tqdm(range(L), total=L, desc="Running"):
-        for j in range(lv_st, lv_end):
-            if(len(Nin[j].b) < len(U[i][1])):
-                long_arr = U[i][1]
-                short_arr = Nin[j].b
+            b = key_to_b(key)
+
+            if commute_check(b, gate_b):
+                # no branching, keep same binary
+                new_state[key] += coeff
             else:
-                long_arr = Nin[j].b
-                short_arr = U[i][1]
+                # branching
+                node = Node(b, coeff)
+                coeff1, coeff2, bnew = M1Prg(node, gate_coeff, gate_b)
 
-            short_padded = np.zeros_like(long_arr)
-            short_padded[:short_arr.shape[0]] = short_arr
+                # left branch always stays on same binary
+                new_state[key] += coeff1
 
-            #if(np.inner(short_padded, long_arr) % 2 == 0):
-            if((sum(short_padded) * sum(long_arr) - np.inner(short_padded, long_arr)) % 2 == 0): #if M_b and M_{b_j} commute
-                #pass
-                N = Node(Nin[j].b, Nin[j].c)
-                Nin.append(N)
-                current_pos += 1
-            else:
-                #print("branching")
-                coeff1, coeff2, bnew = M1Prg(Nin[j], U[i][0], U[i][1])
-                #print(coeff2)
-                #print(PpgList[j].b)
-                Nl = Node(Nin[j].b, coeff1) 
-                Nr = Node(bnew, coeff2)
-                Nin.append(Nl)
-                if(sum(bnew) > length_trunc):
-                    pass
-                    #print("length truncation")
-                elif(np.abs(coeff2) < coeff_thres):
-                    pass
-                    #print("coefficient truncation")
-                else:
-                    Nin.append(Nr)
-                    current_pos += 1
-                current_pos += 1
+                # right branch: apply truncations
+                bnew = np.asarray(bnew, dtype=np.uint8)
+                if int(bnew.sum()) <= length_trunc and (not coeff_thres or abs(coeff2) >= coeff_thres):
+                    new_state[b_to_key(bnew)] += coeff2
 
-        #PpgList.traverseAndPrint()
-        #print("length = ", PpgList.len)
-        lv_st = lv_end 
-        lv_end = current_pos + 1
-        """
-        print("Level", i+1, ":")
-        for k in range(lv_st, lv_end):
-            print("coeff = ", Nin[k].c, "binary = ", Nin[k].b)
-        """
-        # record every 'stride' levels
-        if (i % stride) == stride - 1:
-            hist = histogram_from_nodes(Nin[lv_st: lv_end], nf2)
-            sampled_levels.append(i+1)
-            counts_list.append(hist)
+        state = new_state
+
     
-    counts = np.vstack(counts_list) if counts_list else np.zeros((0, nf2), dtype=int)
-    if counts_list:
-        #plot_length_counts(sampled_levels, counts, nf2, logy=False)
-        pass
-    
-    
-    if(save_hist):
-        dir_ = f"len_distr_{date.today():%m%d}/"
-        prefix = dir_ + filesuffix
-        fname =  prefix + ".csv"
-        path = Path(fname)  
-        path.parent.mkdir(parents=True, exist_ok=True)
-        # still need to consider the case gate number % stride != 0
-        np.savetxt(path, counts_list, delimiter=",")
-    Nin = Nin[lv_st: lv_end]
 
-    return Nin
+    # convert dict back to list of Nodes
+    Nout = [Node(np.array(k, dtype=np.uint8), c) for k, c in state.items()]
+    return Nout
 
 def ExpectVal(Input_Node, lenN, rho):
     Expect = 0
@@ -403,7 +372,7 @@ def ExpectVal(Input_Node, lenN, rho):
             PairedOne = np.inner(Pair, rho)           # { i | |n_i> = 1 and (b_{2i}, b_{2i+1}) is paired }
             Expect += ((-1)**PairedOne) * (1j**sum(Pair))* Input_Node[i].c  
             
-    i
+    
     return Expect
 
 
@@ -674,18 +643,6 @@ def random_sparse_v(alpha, nf2, complex_coeff=False, seed=None):
         v[j, k, l, m] = val
 
     return tuples, v
-
-
-def histogram_from_nodes(NodeList, nf2):
-    """Return counts for j=1..nf2 where j = sum(node.b)."""
-    hist = np.zeros(nf2, dtype=int)
-    for node in NodeList:
-        j = int(np.sum(node.b))          
-        if 1 <= j <= nf2:
-            hist[j - 1] += 1
-    return hist
-
-
 
 
 
