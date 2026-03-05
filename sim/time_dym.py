@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 
-ts_st = 1
+ts_st = n-1
 mp = np.zeros(n - ts_st)
 rmp = np.zeros(n - ts_st)
 ana = np.zeros(n - ts_st)
@@ -23,7 +23,7 @@ rel_rmp = np.zeros(n - ts_st)
 mp_trott = np.zeros(n - ts_st)
 
 
-for ts in range(n,n+1):
+for ts in range(n-1,n):
     
 
     trunc_param = np.array([len_trunc, coeff_trunc])
@@ -52,13 +52,14 @@ for ts in range(n,n+1):
 
     # Rotated Majorana Propogation
     tic = time.perf_counter()
-    Node_out = twofourMajStrEvo(nf, h, V, n, dt, Init_Node, trunc_param, trott)
+    ### number of timesteps warning
+    Node_out = twofourMajStrEvo(nf, h, V, ts, dt, Init_Node, trunc_param, trott, rmp_hist)
     toc = time.perf_counter()
     print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
-    for node in Output_Node:
+    #for node in Output_Node:
         #print(sum(node.b))
-        pass
+    #    pass
 
 
     obexp = np.zeros(2**nf, dtype = complex)
@@ -89,19 +90,20 @@ for ts in range(n,n+1):
 
 
     
-    Trotterization(trottexp, init_len, init_maj, U, nf)
+    #Trotterization(trottexp, init_len, init_maj, U, nf)
 
     # 2-norm 
     #mp[ts - ts_st] = np.linalg.norm(obexp)
     #rmp[ts - ts_st] = np.linalg.norm(rexp)
     #ana[ts - ts_st] = np.linalg.norm(dexp)
-    #rel_mp[ts - ts_st] = np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
-    #rel_rmp[ts - ts_st] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
-    mp_trott[ts - ts_st] = np.linalg.norm(obexp - trottexp)
+    rel_mp[ts - ts_st] = np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
+    rel_rmp[ts - ts_st] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
+    #mp_trott[ts - ts_st] = np.linalg.norm(obexp - trottexp)
     
-    #ErrorPrint(dexp, obexp, rexp, 2)
+    ErrorPrint(dexp, obexp, rexp, 2)
 
 #'''
+# save .csv file for later use 
 dir_ = f"ta{date.today():%m%d}/"
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 # fermionic mode + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + len_trunc + coeff_trunc + trotter order + note(optional)
@@ -120,9 +122,9 @@ pltname =  prefix + ".png"
 #'''
 ts_len = np.arange(ts_st, n)  
 plt.figure()
-#plt.plot(ts_len, rel_mp , marker='o', linestyle='-', label='MP')
-#plt.plot(ts_len, rel_rmp , marker='o', linestyle='-', label='RMP')
-plt.plot(ts_len, mp_trott , marker='o', linestyle='-')
+plt.plot(ts_len, rel_mp , marker='o', linestyle='-', label='MP')
+plt.plot(ts_len, rel_rmp , marker='o', linestyle='-', label='RMP')
+#plt.plot(ts_len, mp_trott , marker='o', linestyle='-')
 
 
 

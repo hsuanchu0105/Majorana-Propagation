@@ -28,8 +28,8 @@ init_len = 3 # terms in intial observable
 init_bin = np.zeros((init_len, nf2), dtype=int)
 
 for i in range(init_len):
-    idx = rng.choice(n, size=k[i], replace=False)
-    init_bin[i, idx] = 1
+    idx = rng.choice(nf2, size=k[i], replace=False)
+    init_bin[i][idx] = 1
 
 
 Init_Node = []

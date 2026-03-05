@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-folder = Path("ta0221")      
+folder = Path("len_distr_0224")      
 pattern = "timestep*.csv"                  # or e.g. "counts_*.csv"
 
 files = sorted(folder.glob(pattern))

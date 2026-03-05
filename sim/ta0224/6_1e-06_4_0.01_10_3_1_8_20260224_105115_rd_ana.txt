@@ -1,0 +1,67 @@
+alpha_h, alpha_v =  1 8
+	
+seed for nonzero terms =  715933
+seed for coefficients =   12238
+	
+[[2 7]]
+[[0 1 4 5]
+ [0 1 3 7]
+ [3 4 6 7]
+ [0 2 3 4]
+ [1 2 6 7]
+ [1 2 3 7]
+ [1 3 4 7]
+ [1 4 5 7]]
+gate count 91
+Majorana Propagation : 48.7326 seconds
+Rotated Evolution : 2.7829 seconds
+	
+-----------------Direct exponential---------------
+[ 0.93817697-1.36062876e-17j -0.81654023-2.54641804e-17j
+ -1.01506761+7.31428984e-19j  1.04719867-1.77602383e-17j
+  0.8521767 +1.85295074e-17j -0.88205286-6.26492121e-18j
+ -1.07931877-8.04909971e-18j  0.97192869+1.87602271e-17j
+ -0.88777009-7.72662687e-18j  0.78812215-4.78168633e-18j
+  1.04949936+8.64787332e-19j -1.0598753 -9.28914588e-18j
+ -0.84417419+1.38777878e-17j  0.85177059+1.38777878e-17j
+  1.10337726+1.04083409e-17j -1.01745134+1.38777878e-17j]
+-----------------Majorana Propagation-------------
+[ 1.20411393+0.j -0.96491979+0.j -0.57813793+0.j  0.70440543+0.j
+  0.96920663+0.j -1.09558029+0.j -0.73508987+0.j  0.43281292+0.j
+ -1.02671004+0.j  0.87391711+0.j  0.67446731+0.j -0.71433361+0.j
+ -0.98245075+0.j  1.0224232 +0.j  0.85965861+0.j -0.64378287+0.j]
+------------Rotated Majorana Propagation----------
+[ 0.99047029+0.j -0.96235841+0.j -0.99101293+0.j  0.9634668 +0.j
+  0.98562124+0.j -0.96720746+0.j -0.98672963+0.j  0.9677501 +0.j
+ -0.99039449+0.j  0.96228261+0.j  0.99108873+0.j -0.96354261+0.j
+ -0.98554544+0.j  0.96713166+0.j  0.98680544+0.j -0.9678259 +0.j]
+	
+Relative error Majorana Propagation
+[0.28346139 0.18171739 0.43044392 0.32734308 0.13733059 0.24208008
+ 0.31893163 0.55468655 0.15650442 0.10885999 0.35734376 0.32602108
+ 0.16380099 0.20035044 0.22088424 0.3672593 ]
+Relative error rotated Majorana
+[0.05573929 0.17858052 0.02369762 0.07995796 0.15659257 0.09654138
+ 0.08578479 0.00429928 0.11559794 0.22098155 0.05565571 0.0908906
+ 0.16746692 0.13543679 0.10565002 0.04877426]
+	
+Global relative error
+0.30992273731638686 0.1072677107856806
+[[0 2]]
+[[2 3 4 7]
+ [0 2 4 5]
+ [0 4 5 7]
+ [0 4 5 6]
+ [0 1 5 6]
+ [2 3 4 6]
+ [0 1 4 6]
+ [0 2 4 6]]
+gate count 91
+Traceback (most recent call last):
+  File "/mnt/c/Users/faceb/OneDrive/Desktop/TUM_CSE/Guided_research/code/sim/random_analysis.py", line 116, in <module>
+    Output_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
+  File "/mnt/c/Users/faceb/OneDrive/Desktop/TUM_CSE/Guided_research/code/sim/MajProp.py", line 347, in MajoranaPropagation
+    Nl = Node(Nin[j].b, coeff1) 
+  File "/mnt/c/Users/faceb/OneDrive/Desktop/TUM_CSE/Guided_research/code/sim/MajProp.py", line 135, in __init__
+    def __init__(self, b, c = 1):
+KeyboardInterrupt

@@ -320,8 +320,8 @@ def MajoranaPropagation(trunc, Nin, lenU, U, save_hist = False, filesuffix = "")
 
     
 
-    #for i in range(L):
-    for i in tqdm(range(L), total=L, desc="Running"):
+    for i in range(L):
+    #for i in tqdm(range(L), total=L, desc="Running"):
         for j in range(lv_st, lv_end):
             if(len(Nin[j].b) < len(U[i][1])):
                 long_arr = U[i][1]
@@ -357,6 +357,7 @@ def MajoranaPropagation(trunc, Nin, lenU, U, save_hist = False, filesuffix = "")
                     Nin.append(Nr)
                     current_pos += 1
                 current_pos += 1
+
         #PpgList.traverseAndPrint()
         #print("length = ", PpgList.len)
         lv_st = lv_end 
@@ -374,8 +375,8 @@ def MajoranaPropagation(trunc, Nin, lenU, U, save_hist = False, filesuffix = "")
     
     counts = np.vstack(counts_list) if counts_list else np.zeros((0, nf2), dtype=int)
     if counts_list:
-        plot_length_counts(sampled_levels, counts, nf2, logy=False)
-
+        #plot_length_counts(sampled_levels, counts, nf2, logy=False)
+        pass
     
     
     if(save_hist):
@@ -408,20 +409,22 @@ def ExpectVal(Input_Node, lenN, rho):
 
         
 # First change H' into new basis, then write in the form of fermionic gates
-def BasisChange(N, h, V, dt, trott_order, bdry):
+def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
     # dt: time per timestep
     # trott_order: trotterization order 
 	# output: tensor after contraction with R^T, resulting fermionic gate
-
+    
+    #print("input non zero V = ", V.nonzero())
 
     # find a way to check the correctness of contraction
     if(bdry):
         R = expm(2 * h * dt)
     else:
         R = expm(4 * h * dt)
+    #print("h = ", h)
     #print("R = ", R)
     Rt = np.transpose(R)
     #print(np.allclose(R, np.transpose(R))) # Why do changing R into Rt not change the result?
@@ -431,6 +434,10 @@ def BasisChange(N, h, V, dt, trott_order, bdry):
     V4 = np.einsum("nopm, mq -> nopq", V3, Rt)
 	
     coef_sh = V4.shape
+
+    #print("non zero terms of rotated V = ", V4.nonzero())
+
+
     U = []
     if(trott_order == 2):
         for k in range(coef_sh[0]):
@@ -438,7 +445,7 @@ def BasisChange(N, h, V, dt, trott_order, bdry):
                 for m in range(coef_sh[2]):
                     for n in range(coef_sh[3]):
                         b = np.zeros(2 * N)
-                        if(V4[k][l][m][n] !=0): # maybe apply a threshold for coefficient
+                        if(V4[k][l][m][n] > trunc_param[1]): # maybe apply a threshold for coefficient
                             
                             theta = V4[k][l][m][n] * dt  #second order trotterization
                             b[k] += 1
@@ -460,7 +467,7 @@ def BasisChange(N, h, V, dt, trott_order, bdry):
                 for m in range(coef_sh[2]):
                     for n in range(coef_sh[3]):
                         b = np.zeros(2 * N)
-                        if(V4[k][l][m][n] !=0): # maybe apply a threshold for coefficient
+                        if(V4[k][l][m][n] > trunc_param[1]):
                             
                             theta = 2 * V4[k][l][m][n] * dt  
                             b[k] += 1
@@ -473,6 +480,7 @@ def BasisChange(N, h, V, dt, trott_order, bdry):
                             theta = theta * perm_parity(k, l , m, n)
                             U.append([theta, b])
 
+    
     return V4, U
 
 def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsave):
@@ -490,11 +498,12 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsa
     for i in range(n):
         if(i==0):
             bdry = True
-        V, U = BasisChange(N, h, V, dt, trott_order, bdry) #coefficient in new basis
+        V, U = BasisChange(N, h, V, dt, trott_order, trunc_param, bdry) #coefficient in new basis
         #print("V_update= ", V)
         #print("Fermionic gate (V)", U)
-        print(f"gate count at step {i}: {len(U)}")
+        #print(f"gate count at step {i}: {len(U)}")
         Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, histsave, "timestep" + str(i))
+        #print(len(Node_next))
 
     return Node_next
 
@@ -609,18 +618,18 @@ def random_sparse_h(alpha, nf2, complex_coeff=False, seed=None):
     
     rng = np.random.default_rng(seed)
 
-    # 2) all (i,j) with i<j
+    # all (i,j) with i<j
     iu, ju = np.triu_indices(nf2, k=1)   # k=1 excludes diagonal
     all_pairs = np.column_stack([iu, ju])  # shape (M, 2)
 
-    # 3) sample n distinct pairs
+    # sample alpha distinct pairs
     idx = rng.choice(all_pairs.shape[0], size=alpha, replace=False)
-    pairs = all_pairs[idx]  # (n,2)
+    pairs = all_pairs[idx]  # (alpha,2)
 
     # allocate h
     h = np.zeros((nf2, nf2), dtype=complex if complex_coeff else float)
 
-    # 4) assign coefficients ~ Unif(-1, 1)
+    # assign coefficients ~ Unif(-1, 1)
     if complex_coeff:
         vals = rng.uniform(-1, 1, size=alpha) + 1j * rng.uniform(-1, 1, size=alpha)
     else:

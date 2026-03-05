@@ -511,6 +511,49 @@ plt.tight_layout()
 plt.title("Geometric mean and standard deviation for random coefficients")
 
 plt.savefig('0219.png', dpi=200, bbox_inches="tight")
-plt.show()
+#plt.show()
 
 
+
+h = np.zeros((nf2, nf2))
+t = 0.01
+h[0][1] = 1 
+h[0][2] = 1
+h[2][4] = 1
+h[1][5] = 1
+h[1][0] = -1 
+h[2][0] = -1
+h[4][2] = -1
+h[5][1] = -1
+
+
+
+V = np.zeros((nf2, nf2, nf2, nf2))
+V[0][1][2][3] = 0.5
+V[1][2][3][4] = 0.5
+
+print("h=", h)
+R = expm(2 * h * t)
+print("R = ", R)
+Rt = np.transpose(R)
+
+V1 = np.einsum("jklm, jn -> nklm", V, Rt)
+V2 = np.einsum("nklm, ko -> nolm", V1, Rt)
+V3 = np.einsum("nolm, lp -> nopm", V2, Rt)
+V4 = np.einsum("nopm, mq -> nopq", V3, Rt)
+
+print("V = ", V.nonzero())
+print("V4 = ", V4.nonzero())
+
+'''
+V = np.array([[1, -1], [2, 3]])
+R = np.array([[1, 0], [-1, -1]])
+
+V1 = np.einsum("jk, kl -> jl", V, R)
+V2 = np.einsum("jk, kl -> lj", V, R)
+
+
+print("V = ", V)
+print("V1 = ", V1)
+print("V2 = ", V2)
+'''

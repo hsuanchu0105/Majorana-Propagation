@@ -20,12 +20,11 @@ class Tee:
 
 
 dir_ = f"ta{date.today():%m%d}/"
-ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 note = "rd_ana"
 
 
-cs_seed = 155533 # seed for non-zero terms 
-mst_seed = 123298 # seed for coefficients
+cs_seed = 715933 # seed for non-zero terms 
+mst_seed = 12238 # seed for coefficients
 
 
 nmin_h=1
@@ -56,6 +55,7 @@ for cs in range(cn):
     alpha_h[cs] = rng_nzc.integers(nmin_h, nmax_h + 1)
     alpha_v[cs] = rng_nzc.integers(nmin_v, nmax_v + 1)
 
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path =  dir_  + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(alpha_h[cs]) + "_" + str(alpha_v[cs]) + "_" + ts + "_" + note  + ".txt"
 
     os.makedirs(os.path.dirname(log_path) or ".", exist_ok=True)
