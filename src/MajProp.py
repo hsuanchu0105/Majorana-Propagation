@@ -5,7 +5,7 @@ from itertools import combinations
 from datetime import date
 from pathlib import Path
 from tqdm import tqdm
-from Op import *
+from .Op import *
 
 
 def b_to_key(b) -> tuple:

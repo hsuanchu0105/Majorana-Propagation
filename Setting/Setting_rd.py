@@ -1,5 +1,5 @@
 import numpy as np
-from MajProp import *
+from src.MajProp import *
 import itertools
 
 cn = 5 # number of cases 
@@ -13,11 +13,11 @@ nf2 = 2 * nf
 
 trott = 1 # trotterization order 
 
-len_trunc = 6
+len_trunc = 8
 coeff_trunc = 1e-6
 
 hist_save = False
-seed_init = 39392
+seed_init = 393921
 
 rng = np.random.default_rng(seed_init)
 m = rng.integers(1, len_trunc//2 + 1, size = 3)            # m in [1, nf]

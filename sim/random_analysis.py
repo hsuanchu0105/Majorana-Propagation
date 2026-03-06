@@ -1,30 +1,39 @@
-from MajProp import * 
-from Setting_rd import *
+from src.MajProp import * 
+from Setting.Setting_rd import *
+from src.Gate import *
+from src.Err_anlys import *
+from src.RMP import *
+from src.TE import *
 import time 
 from datetime import date
 from datetime import datetime 
 import sys
 import os
 from matplotlib.ticker import MaxNLocator
-
-class Tee:
-    def __init__(self, *files):
-        self.files = files
-    def write(self, data):
-        for f in self.files:
-            f.write(data)
-            f.flush()
-    def flush(self):
-        for f in self.files:
-            f.flush()
+import matplotlib.pyplot as plt
 
 
-dir_ = f"ta{date.today():%m%d}/"
+
+dir_ = f"analysis/ta{date.today():%m%d}/"
 note = "rd_ana"
 
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_path =  dir_  + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len) + "_" + ts + "_" + note  + ".txt"
 
-cs_seed = 715933 # seed for non-zero terms 
-mst_seed = 12238 # seed for coefficients
+os.makedirs(os.path.dirname(log_path) or ".", exist_ok=True)
+
+log_file = open(log_path, "w", encoding="utf-8")
+
+def log(*args, **kwargs):
+    # show on console
+    print(*args, **kwargs)
+    # also write to file
+    print(*args, **kwargs, file=log_file)
+    log_file.flush()
+
+
+nz_seed = 71596732 # seed for non-zero terms 
+cf_seed = 1225638 # seed for coefficients
 
 
 nmin_h=1
@@ -44,42 +53,41 @@ err_rot = np.zeros((cn, sn))
 alpha_h = np.zeros(cn, dtype = int)
 alpha_v = np.zeros(cn, dtype = int)
 
-mcs_rng = np.random.default_rng(cs_seed)  
-cs_seeds = mcs_rng.integers(0, 2**32 - 1, size=cn, dtype=np.uint32)
+nz_rng = np.random.default_rng(nz_seed)  
+nz_seeds = nz_rng.integers(0, 2**32 - 1, size=cn, dtype=np.uint32) # choose cn random integers
+
+log("seed for initial terms = ", seed_init, '\t')
+log("seed for non-zero terms = ", nz_seed, '\t')
+log("seed for coefficients =  ", cf_seed, '\t')
+
 
 for cs in range(cn):
     # for each case we have one (alpha_h, alpha_v) pair
     
-    rng_nzc = np.random.default_rng(int(cs_seeds[cs]))  # non-zero count 
+    rng_nzc = np.random.default_rng(int(nz_seeds[cs]))  # non-zero count 
     # here alpha_h only consider upper triangle terms 
     alpha_h[cs] = rng_nzc.integers(nmin_h, nmax_h + 1)
     alpha_v[cs] = rng_nzc.integers(nmin_v, nmax_v + 1)
 
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_path =  dir_  + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(alpha_h[cs]) + "_" + str(alpha_v[cs]) + "_" + ts + "_" + note  + ".txt"
+    
 
-    os.makedirs(os.path.dirname(log_path) or ".", exist_ok=True)
-
-    log_file = open(log_path, "w", encoding="utf-8")
-    sys.stdout = Tee(sys.__stdout__, log_file)
-    sys.stderr = Tee(sys.__stderr__, log_file)
+    #log_file = open(log_path, "w", encoding="utf-8")
+    #sys.stdout = Tee(sys.__stdout__, log_file)
+    #sys.stderr = Tee(sys.__stderr__, log_file)
 
     print("alpha_h, alpha_v = ", alpha_h[cs], alpha_v[cs])
     print('\t')
 
-    master_rng = np.random.default_rng(mst_seed)  # pick any fixed master seed
-    seeds = master_rng.integers(0, 2**32 - 1, size=sn, dtype=np.uint32)
+    cf_rng = np.random.default_rng(cf_seed)  # pick any fixed master seed
+    cf_seeds = cf_rng.integers(0, 2**32 - 1, size=sn, dtype=np.uint32)
+
     
-    print("seed for nonzero terms = ", cs_seed)
-    print("seed for coefficients =  ", mst_seed)
-    #print("seed for coefficient generation:", seeds)
-    print('\t')
 
 
     for s in range(sn):
         
-        pairs_h, h = random_sparse_h(alpha_h[cs], nf2, complex_coeff=False, seed=int(seeds[s]))
-        pairs_v, V = random_sparse_v(alpha_v[cs], nf2, complex_coeff=False, seed=int(seeds[s]))
+        pairs_h, h = random_sparse_h(alpha_h[cs], nf2, complex_coeff=False, seed=int(cf_seeds[s]))
+        pairs_v, V = random_sparse_v(alpha_v[cs], nf2, complex_coeff=False, seed=int(cf_seeds[s]))
 
 
         #print(h)
@@ -166,15 +174,23 @@ for cs in range(cn):
     
 
 
+#log('\t')
+#log("relative error = ", err)
+#log("relative error (rot) = ", err_rot)
+#log('\t')
 print('\t')
 print("relative error = ", err)
-print("relative erorr (rot) = ", err_rot)
+print("relative error (rot) = ", err_rot)
 print('\t')
+
+dir_ = f"analysis/ta{date.today():%m%d}/"
+prefix = str(seed_init) + "_" +  str(nz_seed) + "_" + str(cf_seed)
+np.savez(dir_ + prefix + "_errors.npz", err=err, err_rot=err_rot)
 
 
 # truncation method + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + note(option) 
 
-dir_ = f"plot{date.today():%m%d}/"
+dir_ = f"analysis/plot{date.today():%m%d}/"
 note = "_rd"
 filename =  dir_  + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(alpha_h) + "_" + str(alpha_v) + "_" + ts + "_" + note  + ".png"
 
@@ -219,3 +235,4 @@ plt.title("Geometric mean and standard deviation for random coefficients")
 os.makedirs(os.path.dirname(filename), exist_ok=True)
 plt.savefig(filename, dpi=200, bbox_inches="tight")
 plt.show()
+

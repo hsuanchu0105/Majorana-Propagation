@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.linalg import expm
-from Op import *
+from .Op import *
 
 def Trotterization(exp, init_len, init_maj, U, nf):
 

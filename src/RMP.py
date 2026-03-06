@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.linalg import expm
-from MajProp import *
+from .MajProp import *
 
 # First change H' into new basis, then write in the form of fermionic gates
 def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
