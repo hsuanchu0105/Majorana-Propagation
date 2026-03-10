@@ -1,7 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 cn = 5
+
+mp_color = "tab:blue"
+rmp_color = "tab:orange"
 
 d = np.load("analysis/ta0306/393921_71596732_1225638_errors.npz")
 err = d["err"]
@@ -38,6 +42,13 @@ vp2 = ax.violinplot(
     showmedians=False,
     showextrema=False,
 )
+
+
+
+
+# after you create vp1 and vp2 from ax.violinplot(...)
+
+
 
 # Make the two sets visually distinct (no custom colors required)
 for body in vp1["bodies"]:

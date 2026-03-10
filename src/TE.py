@@ -57,15 +57,22 @@ def DirectExp(init_len, init_maj, v, h, t, i, nf, nf2):
 
     F = np.zeros((2**nf, 2**nf), dtype = complex)
     V = np.zeros((2**nf, 2**nf), dtype = complex)
+
+    h_ind = np.nonzero(h) #tuple 
+    v_ind = np.nonzero(v)
     
-    for m in range(nf2):
-        for k in range(m, nf2):
-            F += 2 * 1j * h[m][k] * (Maj_mtx[m] @ Maj_mtx[k])
-    for j in range(nf2):
-        for k in range(nf2):
-            for l in range(nf2):
-                for m in range(nf2):
-                    V+= v[j][k][l][m] * (Maj_mtx[j] @ Maj_mtx[k] @ Maj_mtx[l]@ Maj_mtx[m])
+    for i in range(len(h_ind[0])):
+        m = h_ind[0][i]
+        k = h_ind[1][i]
+        F += 2 * 1j * h[m][k] * (Maj_mtx[m] @ Maj_mtx[k])
+
+    for i in range(len(v_ind[0])):
+        j = v_ind[0][i]
+        k = v_ind[1][i]
+        l = v_ind[2][i]
+        m = v_ind[3][i]
+        V += v[j][k][l][m] * (Maj_mtx[j] @ Maj_mtx[k] @ Maj_mtx[l]@ Maj_mtx[m])
+        
     H = Maj_to_mtx(init_len, init_maj, nf)
     H = expm(1j * (V+F) * t) @ H @ expm(-1j * (V+F) * t)
 

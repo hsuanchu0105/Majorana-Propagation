@@ -77,7 +77,7 @@ def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
     
     return V4, U
 
-def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsave):
+def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsave = False):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 

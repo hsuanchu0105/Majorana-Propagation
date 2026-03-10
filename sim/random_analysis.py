@@ -32,8 +32,8 @@ def log(*args, **kwargs):
     log_file.flush()
 
 
-nz_seed = 71596732 # seed for non-zero terms 
-cf_seed = 1225638 # seed for coefficients
+nz_seed = 716732 # seed for non-zero terms 
+cf_seed = 126338 # seed for coefficients
 
 
 nmin_h=1
@@ -96,9 +96,7 @@ for cs in range(cn):
 
         h_ind = np.nonzero(h)
         v_ind = np.nonzero(V)
-
-
-
+        
         U = []
 
         AppendH(U, h_ind, dt, trott, nf2)
@@ -183,7 +181,7 @@ print("relative error = ", err)
 print("relative error (rot) = ", err_rot)
 print('\t')
 
-dir_ = f"analysis/ta{date.today():%m%d}/"
+dir_ = f"analysis/ta{date.today():%m%d}/" 
 prefix = str(seed_init) + "_" +  str(nz_seed) + "_" + str(cf_seed)
 np.savez(dir_ + prefix + "_errors.npz", err=err, err_rot=err_rot)
 

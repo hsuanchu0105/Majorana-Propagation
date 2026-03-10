@@ -3,27 +3,63 @@ import numpy as np
 import os
 
 
-def comp_plot(x, comp1, comp2, x_label, y_label, filename, saveOpt = False, logx = False, logy = False):
-     
+def comp_plot(
+    x,
+    comps,
+    x_label,
+    y_label,
+    filename=None,
+    labels=None,
+    saveOpt=False,
+    logx=False,
+    logy=False,
+    markers=None,
+    linestyles=None,
+):
+    """
+    x      : 1D array-like for x values
+    comps  : list of 1D array-like, each one is a curve to plot
+    labels : list of labels for each curve
+    """
+
     plt.figure()
-    #plt.plot(tc_len, rel_mp_global, marker='o', linestyle='-')
-    plt.plot(x, comp1, marker='o', linestyle='-', label='rel_mp_global')
-    plt.plot(x, comp2, marker='o', linestyle='-', label='rel_rot_global')
+
+    n = len(comps)
+
+    if labels is None:
+        labels = [f"comp{i+1}" for i in range(n)]
+    if markers is None:
+        markers = ['o'] * n
+    if linestyles is None:
+        linestyles = ['-'] * n
+
+    for i, y in enumerate(comps):
+        plt.plot(
+            x,
+            y,
+            marker=markers[i] if i < len(markers) else 'o',
+            linestyle=linestyles[i] if i < len(linestyles) else '-',
+            label=labels[i] if i < len(labels) else f"comp{i+1}"
+        )
 
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
-    if(logy):
-        plt.yscale('log')  
-    if(logx):
-        plt.xscale('log')  
+    if logy:
+        plt.yscale('log')
+    if logx:
+        plt.xscale('log')
+
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.legend()
     plt.tight_layout()
 
-    if(saveOpt):
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+    if saveOpt and filename is not None:
+        folder = os.path.dirname(filename)
+        if folder:
+            os.makedirs(folder, exist_ok=True)
         plt.savefig(filename, dpi=200, bbox_inches="tight")
+
     plt.show()
 
 def plt_hist(hist, nf2, level, x_label = "Majorana monomial length", y_label = "Count", logy = False):  
