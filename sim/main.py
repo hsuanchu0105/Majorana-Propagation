@@ -45,17 +45,17 @@ V[0][1][4][6] = 1
 V[0][1][6][7] = 8
 
 init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0])
-#init_bin = np.array([1, 1, 0, 0, 1, 1])
+#init_bin = np.array([1, 1, 0, 0, 1, 1, 0, 0])
 M1= MajoranaOp(nf2, init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
 
 bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0])
-#bin2 = np.array([0, 0, 1, 1, 0, 0])
+#bin2 = np.array([0, 0, 1, 1, 0, 0, 0, 0])
 M2= MajoranaOp(nf2, bin2)
 N2 = Node(bin2, 1j**M2.rb())
 
 bin3 = np.array([1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0])
-#bin3 = np.array([0, 0, 1, 1, 1, 1])
+#bin3 = np.array([0, 0, 1, 1, 1, 1, 0, 0])
 M3= MajoranaOp(nf2, bin3)
 N3 = Node(bin3, 1j**M3.rb())
 
@@ -117,8 +117,8 @@ for ts in range(1, n):
 
     AppendH(U, h_ind, dt, trott_order, nf2)
     print("gate count", len(U))
-    
-    trunc_param = np.array([8, 1e-6])
+
+    trunc_param = np.array([12, 1e-8])
     #trunc_param = np.array([4, 10**(coef_tr)])
 
     

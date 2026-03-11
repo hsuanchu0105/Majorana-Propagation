@@ -46,12 +46,12 @@ def ExpectVal(Input_Node, lenN, rho):
     return Expect    
 
 
-def DirectExp(init_len, init_maj, v, h, t, i, nf, nf2):
+def DirectExp(init_len, init_maj, v, h, t, idx, nf, nf2):
 
     Maj_mtx = majorana_matrices(nf)
     
     #for i in range(2**nf):
-    test = np.eye(2**nf)[i]
+    test = np.eye(2**nf)[idx]
     rho = np.reshape(test, (2**nf, 1))
     rhoT = np.transpose(rho)
 
@@ -64,8 +64,8 @@ def DirectExp(init_len, init_maj, v, h, t, i, nf, nf2):
     for i in range(len(h_ind[0])):
         m = h_ind[0][i]
         k = h_ind[1][i]
-        F += 2 * 1j * h[m][k] * (Maj_mtx[m] @ Maj_mtx[k])
-
+        F += 1j * h[m][k] * (Maj_mtx[m] @ Maj_mtx[k]) 
+        
     for i in range(len(v_ind[0])):
         j = v_ind[0][i]
         k = v_ind[1][i]

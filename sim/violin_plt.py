@@ -7,7 +7,7 @@ cn = 5
 mp_color = "tab:blue"
 rmp_color = "tab:orange"
 
-d = np.load("analysis/ta0306/393921_71596732_1225638_errors.npz")
+d = np.load("analysis/ta0310/3931_716732_126338_errors.npz")
 err = d["err"]
 err_rot = d["err_rot"]
 # err, err_rot: shape (cn, n_samples)
