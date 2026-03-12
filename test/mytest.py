@@ -3,7 +3,7 @@ from scipy.linalg import expm
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import itertools
-from MajProp import * 
+from src.MajProp import * 
 
 
 
@@ -557,3 +557,49 @@ print("V = ", V)
 print("V1 = ", V1)
 print("V2 = ", V2)
 '''
+
+def compress_antisym_4tensor(V, tol=0.0):
+    """
+    Compress a fully antisymmetric rank-4 tensor V[a,b,c,d]
+    into a tensor Vcanon with only entries i<j<k<l kept.
+
+    Returns
+    -------
+    Vcanon : ndarray, shape (N,N,N,N)
+        Tensor with only canonical entries filled.
+    terms : dict
+        Dictionary {(i,j,k,l): value} for i<j<k<l
+    """
+    N = V.shape[0]
+    Vcanon = np.zeros_like(V, dtype = V.dtype)
+    terms = {} # non-zero terms with strictly increasing indices i < j < k < l
+
+    for a, b, c, d in zip(*np.nonzero(np.abs(V) > tol)):
+        # repeated indices => should vanish for antisymmetric tensor
+        if len({a, b, c, d}) < 4:
+            continue
+
+        key = tuple(sorted((a, b, c, d)))   # canonical ordering i<j<k<l
+        sign = perm_parity(a, b, c, d)
+
+        val = sign * V[a, b, c, d]
+
+        if key in terms:
+            terms[key] += val
+        else:
+            terms[key] = val
+
+    for (i, j, k, l), val in terms.items():
+        Vcanon[i, j, k, l] = val
+
+    return Vcanon, terms
+
+V = np.zeros((6, 6, 6, 6))
+V[0][1][2][3] = 1
+V[1][0][2][3] = -3
+V[1][3][2][0] = 0.1
+
+
+V_mg, terms = compress_antisym_4tensor(V)
+print(V_mg[0][1][2][3]  == 4.1)
+print(V_mg[1][0][2][3]  == 0)

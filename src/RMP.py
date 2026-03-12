@@ -2,6 +2,43 @@ import numpy as np
 from scipy.linalg import expm
 from .MajProp import *
 
+def compress_antisym_4tensor(V, tol=0.0):
+    """
+    Compress a fully antisymmetric rank-4 tensor V[a,b,c,d]
+    into a tensor Vcanon with only entries i<j<k<l kept.
+
+    Returns
+    -------
+    Vcanon : ndarray, shape (N,N,N,N)
+        Tensor with only canonical entries filled.
+    terms : dict
+        Dictionary {(i,j,k,l): value} for i<j<k<l
+    """
+    N = V.shape[0]
+    Vcanon = np.zeros_like(V, dtype = V.dtype)
+    terms = {} # non-zero terms with strictly increasing indices i < j < k < l
+
+    for a, b, c, d in zip(*np.nonzero(np.abs(V) > tol)):
+        # repeated indices => should vanish for antisymmetric tensor
+        if len({a, b, c, d}) < 4:
+            continue
+
+        key = tuple(sorted((a, b, c, d)))   # canonical ordering i<j<k<l
+        sign = perm_parity(a, b, c, d)
+
+        val = sign * V[a, b, c, d]
+
+        if key in terms:
+            terms[key] += val
+        else:
+            terms[key] = val
+
+    for (i, j, k, l), val in terms.items():
+        Vcanon[i, j, k, l] = val
+
+    return Vcanon, terms
+
+
 # First change H' into new basis, then write in the form of fermionic gates
 def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
 	# N: number of Fermionic mode
@@ -26,53 +63,55 @@ def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
     V2 = np.einsum("nklm, ko -> nolm", V1, Rt)
     V3 = np.einsum("nolm, lp -> nopm", V2, Rt)
     V4 = np.einsum("nopm, mq -> nopq", V3, Rt)
-	
-    coef_sh = V4.shape
 
-    #print("non zero terms of rotated V = ", V4.nonzero())
+    V4, terms = compress_antisym_4tensor(V4)	
+    rot_ts = np.nonzero(V4)
 
+
+    #print("non zero terms of rotated V = ", rot_ts)
 
     U = []
     if(trott_order == 2):
-        for k in range(coef_sh[0]):
-            for l in range(coef_sh[1]):
-                for m in range(coef_sh[2]):
-                    for n in range(coef_sh[3]):
-                        b = np.zeros(2 * N)
-                        if(V4[k][l][m][n] > trunc_param[1]): # maybe apply a threshold for coefficient
-                            
-                            theta = V4[k][l][m][n] * dt  #second order trotterization
-                            b[k] += 1
-                            b[l] += 1
-                            b[m] += 1
-                            b[n] += 1
-                            for q in range(2 * N):
-                                b[q] = b[q] % 2
-                            
-                            theta = theta * perm_parity(k, l , m, n)
-                            U.append([theta, b])
+        for i in range(len(rot_ts[0])):
+            k = rot_ts[0][i]
+            l = rot_ts[1][i]
+            m = rot_ts[2][i]
+            n = rot_ts[3][i]
+            b = np.zeros(2 * N)
+            if(V4[k][l][m][n] > trunc_param[1]): # maybe apply a threshold for coefficient
+                
+                theta = V4[k][l][m][n] * dt  #second order trotterization
+                b[k] += 1
+                b[l] += 1
+                b[m] += 1
+                b[n] += 1
+                for q in range(2 * N):
+                    b[q] = b[q] % 2
+                
+                theta = theta * perm_parity(k, l , m, n)
+                U.append([theta, b])
 
         for i in range(len(U)-1, -1, -1):
             U.append(U[i])
 
     elif(trott_order == 1):
-        for k in range(coef_sh[0]):
-            for l in range(coef_sh[1]):
-                for m in range(coef_sh[2]):
-                    for n in range(coef_sh[3]):
-                        b = np.zeros(2 * N)
-                        if(V4[k][l][m][n] > trunc_param[1]):
-                            
-                            theta = 2 * V4[k][l][m][n] * dt  
-                            b[k] += 1
-                            b[l] += 1
-                            b[m] += 1
-                            b[n] += 1
-                            for q in range(2 * N):
-                                b[q] = b[q] % 2
-                            
-                            theta = theta * perm_parity(k, l , m, n)
-                            U.append([theta, b])
+        for i in range(len(rot_ts[0])):
+            k = rot_ts[0][i]
+            l = rot_ts[1][i]
+            m = rot_ts[2][i]
+            n = rot_ts[3][i]
+            b = np.zeros(2 * N)
+            if(V4[k][l][m][n] > trunc_param[1]):  
+                theta = 2 * V4[k][l][m][n] * dt  
+                b[k] += 1
+                b[l] += 1
+                b[m] += 1
+                b[n] += 1
+                for q in range(2 * N):
+                    b[q] = b[q] % 2
+                
+                theta = theta * perm_parity(k, l , m, n)
+                U.append([theta, b])
 
     
     return V4, U

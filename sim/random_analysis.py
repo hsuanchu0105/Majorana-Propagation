@@ -13,7 +13,6 @@ from matplotlib.ticker import MaxNLocator
 import matplotlib.pyplot as plt
 
 
-
 dir_ = f"analysis/ta{date.today():%m%d}/"
 note = "rd_ana"
 
@@ -32,14 +31,15 @@ def log(*args, **kwargs):
     log_file.flush()
 
 
-nz_seed = 716732 # seed for non-zero terms 
-cf_seed = 126338 # seed for coefficients
+
+nz_seed = 92333132 # seed for non-zero terms 
+cf_seed = 5238 # seed for coefficients
 
 
 nmin_h=1
-nmax_h=8
+nmax_h=10
 nmin_v=1
-nmax_v=8
+nmax_v=10
 
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
@@ -91,12 +91,19 @@ for cs in range(cn):
 
 
         #print(h)
-        print(pairs_h)
-        print(pairs_v)
+        #print(pairs_h)
+        #print(pairs_v)
+
 
         h_ind = np.nonzero(h)
         v_ind = np.nonzero(V)
-        
+
+        #for i in range(len(h_ind[0])):
+            #print(h_ind[0][i], h_ind[1][i], h[h_ind[0][i]][h_ind[1][i]])
+
+        #for i in range(len(v_ind[0])):
+            #print(v_ind[0][i], v_ind[1][i], v_ind[2][i], v_ind[3][i], V[v_ind[0][i]][v_ind[1][i]][v_ind[2][i]][v_ind[3][i]])
+
         U = []
 
         AppendH(U, h_ind, dt, trott, nf2)
@@ -167,7 +174,7 @@ for cs in range(cn):
         eps = 1e-15
         err[cs, s] = 0.0 if np.linalg.norm(dexp) < eps else np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
         err_rot[cs, s] = 0.0 if np.linalg.norm(dexp) < eps else np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
-        ErrorPrint(dexp, obexp, rexp, 2)
+        ErrorPrint(dexp, obexp, rexp, 2, log)
 
     
 

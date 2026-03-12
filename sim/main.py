@@ -11,7 +11,7 @@ import time
 
 
 dt = 0.01
-n = 8 #num of timestep
+n = 2 #num of timestep
 
 #number of fermionic mode 
 nf = 6
@@ -20,12 +20,22 @@ nf2 = 2 * nf
 
 h = np.zeros((nf2, nf2))
 
-h[2][0] = -1 
-h[4][0] = -1
-#h[5][1] = -0.2
-#h[3][2] = -0.2
-#h[5][1]= -0.1
+seed_h = 12345
+seed_v = 25910
 
+size1 = 6
+size2= 7
+rng1 = np.random.default_rng(seed_h)
+vals = rng1.uniform(-1, 1, size=size1)
+h[2][0] = -0.8640217711605882
+h[5][1] = -0.039327907713503585
+h[5][2] = -0.5583484414930555
+h[5][3] = 0.397408193713201
+h[8][2] = -0.8521909977163846
+h[9][6] = -0.8402103310959215
+h[9][7] = -0.09762133497071956
+h[11][0] = -0.8614782934095213
+h[11][10] = 0.46809750664769667
 
 for i in range(nf2):
     for j in range(i+1, nf2):
@@ -34,38 +44,53 @@ for i in range(nf2):
 #print(h)
 
 
-
+rng2 = np.random.default_rng(seed_v)
+vals2 = rng2.uniform(-1, 1, size=size2)
 V = np.zeros((nf2, nf2, nf2, nf2))
-#V[0][1][2][3] = 0.5
-#V[1][2][3][4] = 0.5
-#V[2][3][4][5] = 0.5
-#V[1][3][4][5] = 0.1
-#V[0][1][3][4] = -3
-V[0][1][4][6] = 1
-V[0][1][6][7] = 8
+V[0][1][3][9] = -0.7319375671312152
+V[0][1][4][5] = 0.886824359840124
+V[0][3][5][7] = 0.4784136494071112
+V[0][6][9][10] = -0.12878381918615278
+V[1][2][8][9] = -0.14131477740532583
+V[2][3][4][8] = 0.1853154548499245
+V[2][3][4][10] = -0.7257990377879862
+V[2][7][8][10] = -0.535180162536246
+V[2][7][9][10] = -0.7185340975860877
+V[4][5][8][9] = -0.2874212054575591
+V[5][6][10][11] = -0.2726582598103642
 
-init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0])
+
+
+init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1])
 #init_bin = np.array([1, 1, 0, 0, 1, 1, 0, 0])
 M1= MajoranaOp(nf2, init_bin)
 N1 = Node(init_bin, 1j**M1.rb())
 
-bin2 = np.array([1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0])
+bin2 = np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0])
 #bin2 = np.array([0, 0, 1, 1, 0, 0, 0, 0])
 M2= MajoranaOp(nf2, bin2)
 N2 = Node(bin2, 1j**M2.rb())
 
-bin3 = np.array([1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0])
+bin3 = np.array([0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1])
 #bin3 = np.array([0, 0, 1, 1, 1, 1, 0, 0])
 M3= MajoranaOp(nf2, bin3)
 N3 = Node(bin3, 1j**M3.rb())
 
-#bin4 = np.array([0, 0, 0, 0, 1, 1, 1, 1])
-#M4= MajoranaOp(nf2, bin4)
-#N4 = Node(bin4, 1j**M4.rb())
+bin4 = np.array([0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1])
+M4= MajoranaOp(nf2, bin4)
+N4 = Node(bin4, 1j**M4.rb())
 
-Init_Node = [N1, N2, N3]
+bin5 = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0])
+M5= MajoranaOp(nf2, bin5)
+N5 = Node(bin5, 1j**M5.rb())
+
+bin6 = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1])
+M6= MajoranaOp(nf2, bin6)
+N6 = Node(bin6, 1j**M6.rb())
+
+Init_Node = [N1, N2, N3, N4, N5, N6]
 init_len = len(Init_Node)
-init_maj = [M1, M2, M3]
+init_maj = [M1, M2, M3, M4, M5, M6]
 
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
@@ -118,7 +143,7 @@ for ts in range(1, n):
     AppendH(U, h_ind, dt, trott_order, nf2)
     print("gate count", len(U))
 
-    trunc_param = np.array([12, 1e-8])
+    trunc_param = np.array([8, 1e-8])
     #trunc_param = np.array([4, 10**(coef_tr)])
 
     
