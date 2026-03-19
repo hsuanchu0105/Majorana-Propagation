@@ -603,3 +603,42 @@ V[1][3][2][0] = 0.1
 V_mg, terms = compress_antisym_4tensor(V)
 print(V_mg[0][1][2][3]  == 4.1)
 print(V_mg[1][0][2][3]  == 0)
+
+
+
+h = np.zeros((12, 12))
+
+h[2][0] = -0.8
+h[5][1] = -0.03
+
+for i in range(12):
+    for j in range(i+1, 12):
+        h[i][j] = -h[j][i]
+
+V = np.zeros((12, 12, 12, 12))
+
+
+V[0][3][5][7] = 0.4
+V[0][6][9][10] = -0.1
+
+bin1 = np.array([1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1])
+M1= MajoranaOp(12, bin1)
+N1 = Node(bin1, 1j**M1.rb())
+
+Init_Node = [N1]
+init_len = len(Init_Node)
+init_maj = [M1]
+
+Maj_mtx = majorana_matrices(6)
+U = 0.8 * 2 * 1j * Maj_mtx[0] @ Maj_mtx[2] +  0.03 * 2 * 1j * Maj_mtx[1] @ Maj_mtx[5] + 0.4 * Maj_mtx[0] @ Maj_mtx[3] @ Maj_mtx[5] @ Maj_mtx[7] - 0.1 * Maj_mtx[0] @ Maj_mtx[6] @ Maj_mtx[9] @ Maj_mtx[10] 
+H = Maj_to_mtx(init_len, init_maj, 6)
+H = expm(1j * U * 0.01) @ H @ expm(-1j * U * 0.01)
+
+print(H)
+
+test = np.eye(2**6)[0]
+rho = np.reshape(test, (2**6, 1))
+rhoT = np.transpose(rho)
+Expect_dir = np.trace(rho @ rhoT @ H, dtype = complex)
+
+print(Expect_dir)

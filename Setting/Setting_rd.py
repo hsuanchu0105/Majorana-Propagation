@@ -2,13 +2,13 @@ import numpy as np
 from src.MajProp import *
 import itertools
 
-cn = 1 # number of cases 
-sn = 2 # sample numbers per (alpha_h, alpha_v)
+cn = 5 # number of cases 
+sn = 20 # sample numbers per (alpha_h, alpha_v)
 dt = 0.01
 n = 10 #num of timestep
 
 #number of fermionic mode 
-nf = 6
+nf = 4
 nf2 = 2 * nf
 
 trott = 1 # trotterization order 
@@ -17,10 +17,10 @@ len_trunc = 8
 coeff_trunc = 1e-6
 
 hist_save = False
-seed_init = 393164
+seed_init = 93931132
 
 rng = np.random.default_rng(seed_init)
-init_len = 6 # terms in intial observable
+init_len = 10 # terms in intial observable
 m = rng.integers(1, len_trunc//2 + 1, size = init_len)            # m in [1, len_trunc // 2]
 k = 2 * m
 

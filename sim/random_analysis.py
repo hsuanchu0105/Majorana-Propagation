@@ -32,14 +32,14 @@ def log(*args, **kwargs):
 
 
 
-nz_seed = 92333132 # seed for non-zero terms 
-cf_seed = 5238 # seed for coefficients
+nz_seed = 1923132 # seed for non-zero terms 
+cf_seed = 395238 # seed for coefficients
 
 
 nmin_h=1
-nmax_h=10
+nmax_h=30
 nmin_v=1
-nmax_v=10
+nmax_v=30
 
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
@@ -63,7 +63,7 @@ log("seed for coefficients =  ", cf_seed, '\t')
 
 for cs in range(cn):
     # for each case we have one (alpha_h, alpha_v) pair
-    
+
     rng_nzc = np.random.default_rng(int(nz_seeds[cs]))  # non-zero count 
     # here alpha_h only consider upper triangle terms 
     alpha_h[cs] = rng_nzc.integers(nmin_h, nmax_h + 1)
@@ -190,6 +190,7 @@ print('\t')
 
 dir_ = f"analysis/ta{date.today():%m%d}/" 
 prefix = str(seed_init) + "_" +  str(nz_seed) + "_" + str(cf_seed)
+# save 2 numpy arrays with shape cs * sn 
 np.savez(dir_ + prefix + "_errors.npz", err=err, err_rot=err_rot)
 
 

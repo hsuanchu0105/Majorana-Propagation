@@ -76,6 +76,8 @@ def DirectExp(init_len, init_maj, v, h, t, idx, nf, nf2):
     H = Maj_to_mtx(init_len, init_maj, nf)
     H = expm(1j * (V+F) * t) @ H @ expm(-1j * (V+F) * t)
 
+    #print(H)
+
     Expect_dir = np.trace(rho @ rhoT @ H, dtype = complex)
     return Expect_dir
         #print("Expectation value by direct exponential = ", Expect_dir)

@@ -14,7 +14,7 @@ def sparsity(hind, Vind, nf2):
     
     return delta 
 
-def AppendH(U, ind, theta, trott_order, nf2):
+def AppendH(U, h, ind, dt, trott_order, nf2):
                
     if(trott_order == 2):
         hcnt = 0
@@ -23,6 +23,7 @@ def AppendH(U, ind, theta, trott_order, nf2):
             if(ind[0][i] < ind[1][i]):
                 b1[ind[0][i]] = 1
                 b1[ind[1][i]] = 1
+                theta = h[ind[0][i]][ind[1][i]] * dt
                 U.append([theta, b1])
                 hcnt += 1
         for i in range(len(U)-1, len(U) - hcnt -1, -1):
@@ -34,10 +35,11 @@ def AppendH(U, ind, theta, trott_order, nf2):
             if(ind[0][i] < ind[1][i]):
                 b1[ind[0][i]] = 1
                 b1[ind[1][i]] = 1
+                theta = h[ind[0][i]][ind[1][i]] * dt
                 U.append([2 * theta, b1])
 
 
-def AppendV(U, ind, theta, trott_order, nf2):
+def AppendV(U, V, ind, dt, trott_order, nf2):
     
     if(trott_order == 2):
         for i in range(len(ind[0])):
@@ -47,7 +49,7 @@ def AppendV(U, ind, theta, trott_order, nf2):
             b2[ind[1][i]] = 1
             b2[ind[2][i]] = 1
             b2[ind[3][i]] = 1
-
+            theta = V[ind[0][i]][ind[1][i]][ind[2][i]][ind[3][i]] * dt
             U.append([theta, b2])
         cur_pos = len(U)
         for i in range(cur_pos-1, cur_pos- len(ind[0]) - 1, -1):
@@ -61,7 +63,7 @@ def AppendV(U, ind, theta, trott_order, nf2):
             b2[ind[2][i]] = 1
             b2[ind[3][i]] = 1
 
-
+            theta = V[ind[0][i]][ind[1][i]][ind[2][i]][ind[3][i]] * dt
             U.append([2 * theta, b2])
 
 

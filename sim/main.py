@@ -27,6 +27,7 @@ size1 = 6
 size2= 7
 rng1 = np.random.default_rng(seed_h)
 vals = rng1.uniform(-1, 1, size=size1)
+
 h[2][0] = -0.8640217711605882
 h[5][1] = -0.039327907713503585
 h[5][2] = -0.5583484414930555
@@ -36,6 +37,10 @@ h[9][6] = -0.8402103310959215
 h[9][7] = -0.09762133497071956
 h[11][0] = -0.8614782934095213
 h[11][10] = 0.46809750664769667
+
+
+#h[2][0] = -0.8
+#h[5][1] = -0.03
 
 for i in range(nf2):
     for j in range(i+1, nf2):
@@ -47,6 +52,7 @@ for i in range(nf2):
 rng2 = np.random.default_rng(seed_v)
 vals2 = rng2.uniform(-1, 1, size=size2)
 V = np.zeros((nf2, nf2, nf2, nf2))
+#'''
 V[0][1][3][9] = -0.7319375671312152
 V[0][1][4][5] = 0.886824359840124
 V[0][3][5][7] = 0.4784136494071112
@@ -58,13 +64,21 @@ V[2][7][8][10] = -0.535180162536246
 V[2][7][9][10] = -0.7185340975860877
 V[4][5][8][9] = -0.2874212054575591
 V[5][6][10][11] = -0.2726582598103642
+#'''
 
 
 
-init_bin = np.array([1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1])
-#init_bin = np.array([1, 1, 0, 0, 1, 1, 0, 0])
-M1= MajoranaOp(nf2, init_bin)
-N1 = Node(init_bin, 1j**M1.rb())
+#V[0][3][5][7] = 0.4
+#V[0][6][9][10] = -0.1
+
+
+
+
+
+bin1 = np.array([1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1])
+#bin1 = np.array([1, 1, 0, 0, 1, 1, 0, 0])
+M1= MajoranaOp(nf2, bin1)
+N1 = Node(bin1, 1j**M1.rb())
 
 bin2 = np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0])
 #bin2 = np.array([0, 0, 1, 1, 0, 0, 0, 0])
@@ -91,6 +105,10 @@ N6 = Node(bin6, 1j**M6.rb())
 Init_Node = [N1, N2, N3, N4, N5, N6]
 init_len = len(Init_Node)
 init_maj = [M1, M2, M3, M4, M5, M6]
+
+#Init_Node = [N1]
+#init_len = len(Init_Node)
+#init_maj = [M1]
 
 h_ind = np.nonzero(h)
 v_ind = np.nonzero(V)
@@ -132,18 +150,17 @@ for ts in range(1, n):
 #for coef_tr in range(coef_st, coef_end, -1):
     #trunc_param = np.array([tc_len, 1e-6])
     U = []
-    AppendH(U, h_ind, dt, trott_order, nf2)
-
-    AppendV(U, v_ind, dt, trott_order, nf2)
+    AppendH(U, h, h_ind, dt, trott_order, nf2)
+    AppendV(U, V, v_ind, dt, trott_order, nf2)
 
     for i in range(ts-1):
-        AppendH(U, h_ind, 2 * dt, trott_order, nf2)
-        AppendV(U, v_ind, dt, trott_order, nf2)
+        AppendH(U, h, h_ind, 2 * dt, trott_order, nf2)
+        AppendV(U, V, v_ind, dt, trott_order, nf2)
 
-    AppendH(U, h_ind, dt, trott_order, nf2)
+    AppendH(U, h, h_ind, dt, trott_order, nf2)
     print("gate count", len(U))
 
-    trunc_param = np.array([8, 1e-8])
+    trunc_param = np.array([12, 1e-20])
     #trunc_param = np.array([4, 10**(coef_tr)])
 
     

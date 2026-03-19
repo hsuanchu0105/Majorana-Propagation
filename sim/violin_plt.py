@@ -7,14 +7,30 @@ cn = 5
 mp_color = "tab:blue"
 rmp_color = "tab:orange"
 
-d = np.load("analysis/ta0311/3931_716732_126338_errors.npz")
+d = np.load("analysis/ta0313/93931132_1923132_395238_errors.npz")
 err = d["err"]
 err_rot = d["err_rot"]
+
+'''
+# for concacentation 
+d2 = np.load("analysis/ta0313/393164_92333132_5238_errors.npz")
+
+err1 = d1["err"]          # shape (2, 10)
+err_rot1 = d1["err_rot"]
+
+err2 = d2["err"][-3:, :]     # take last 3 cases from second file
+print(err2.shape)
+err_rot2 = d2["err_rot"][-3:, :]
+
+err = np.concatenate([err1, err2], axis=0)          # shape (cn, 5)
+err_rot = np.concatenate([err_rot1, err_rot2], axis=0)
+'''
+
 # err, err_rot: shape (cn, n_samples)
 # Avoid log(0)
 eps = 1e-300
-log_err   = np.log10(np.clip(err, eps, None))
-log_err_r = np.log10(np.clip(err_rot, eps, None))
+log_err   = np.log(np.clip(err, eps, None))
+log_err_r = np.log(np.clip(err_rot, eps, None))
 
 x = np.arange(1, cn + 1)
 w = 0.18  # horizontal offset between the two violins
@@ -46,9 +62,6 @@ vp2 = ax.violinplot(
 
 
 
-# after you create vp1 and vp2 from ax.violinplot(...)
-
-
 
 # Make the two sets visually distinct (no custom colors required)
 for body in vp1["bodies"]:
@@ -64,7 +77,7 @@ for body in vp2["bodies"]:
 
 ax.set_xticks(x)
 ax.set_xlabel("Case")
-ax.set_ylabel("log10(Relative error)")
+ax.set_ylabel("log(Relative error)")
 ax.grid(True, which="both", linestyle="--", linewidth=0.5)
 ax.set_title("Relative error distributions (violin)")
 
