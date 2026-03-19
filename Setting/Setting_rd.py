@@ -3,7 +3,7 @@ from src.MajProp import *
 import itertools
 
 cn = 5 # number of cases 
-sn = 20 # sample numbers per (alpha_h, alpha_v)
+sn = 10 # sample numbers per (alpha_h, alpha_v)
 dt = 0.01
 n = 10 #num of timestep
 

@@ -37,9 +37,9 @@ cf_seed = 395238 # seed for coefficients
 
 
 nmin_h=1
-nmax_h=30
+nmax_h=20
 nmin_v=1
-nmax_v=30
+nmax_v=20
 
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
@@ -106,15 +106,15 @@ for cs in range(cn):
 
         U = []
 
-        AppendH(U, h_ind, dt, trott, nf2)
+        AppendH(U, h, h_ind, dt, trott, nf2)
 
-        AppendV(U, v_ind, dt, trott, nf2)
+        AppendV(U, V, v_ind, dt, trott, nf2)
 
         for i in range(n-1):
-            AppendH(U, h_ind, 2 * dt, trott, nf2)
-            AppendV(U, v_ind, dt, trott, nf2)
+            AppendH(U, h, h_ind, 2 * dt, trott, nf2)
+            AppendV(U, V, v_ind, dt, trott, nf2)
 
-        AppendH(U, h_ind, dt, trott, nf2)
+        AppendH(U, h, h_ind, dt, trott, nf2)
             
         print("gate count", len(U))
         

@@ -131,7 +131,9 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsa
     for i in range(n):
         if(i==0):
             bdry = True
+        
         V, U = BasisChange(N, h, V, dt, trott_order, trunc_param, bdry) #coefficient in new basis
+        
         #print("V_update= ", V)
         #print("Fermionic gate (V)", U)
         #print(f"gate count at step {i}: {len(U)}")
