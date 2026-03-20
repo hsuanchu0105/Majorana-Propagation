@@ -78,7 +78,7 @@ def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
             m = rot_ts[2][i]
             n = rot_ts[3][i]
             b = np.zeros(2 * N)
-            if(V4[k][l][m][n] > trunc_param[1]): # maybe apply a threshold for coefficient
+            if(np.abs(V4[k][l][m][n]) > trunc_param[1]): # maybe apply a threshold for coefficient
                 
                 theta = V4[k][l][m][n] * dt  #second order trotterization
                 b[k] += 1
@@ -101,7 +101,7 @@ def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
             m = rot_ts[2][i]
             n = rot_ts[3][i]
             b = np.zeros(2 * N)
-            if(V4[k][l][m][n] > trunc_param[1]):  
+            if(np.abs(V4[k][l][m][n]) > trunc_param[1]):  
                 theta = 2 * V4[k][l][m][n] * dt  
                 b[k] += 1
                 b[l] += 1
@@ -116,11 +116,11 @@ def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
     
     return V4, U
 
-def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsave = False):
+def twofourMajStrEvo(N, h, V, sn, dt, Init_Node, trunc_param, trott_order, histsave = False):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
-    # n: number of timesteps
+    # sn: number of timesteps
     # dt: evolution time each timestep 
 	# Initial Node: 
 	# output: coefficient of majorana operator after evolution
@@ -128,14 +128,16 @@ def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsa
     Node_next = Init_Node
 
     bdry = False
-    for i in range(n):
+    for i in range(sn):
         if(i==0):
             bdry = True
         
         V, U = BasisChange(N, h, V, dt, trott_order, trunc_param, bdry) #coefficient in new basis
         
-        #print("V_update= ", V)
-        #print("Fermionic gate (V)", U)
+        print("V_update nonzero= ", np.nonzero(V))
+        for i in range(len(np.nonzero(V)[0])):
+            print(np.nonzero(V)[0][i], np.nonzero(V)[1][i], np.nonzero(V)[2][i], np.nonzero(V)[3][i],  V[np.nonzero(V)[0][i]][np.nonzero(V)[1][i]][np.nonzero(V)[2][i]][np.nonzero(V)[3][i]])
+        print("Fermionic gate (V)", U)
         #print(f"gate count at step {i}: {len(U)}")
         Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, histsave, "timestep" + str(i))
         #print(len(Node_next))

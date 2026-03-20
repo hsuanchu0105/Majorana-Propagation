@@ -11,7 +11,7 @@ import time
 
 
 dt = 0.01
-n = 2 #num of timestep
+n = 1 #num of timestep
 
 #number of fermionic mode 
 nf = 6
@@ -131,7 +131,7 @@ trott_order = 1
 #rel_mp_global = np.zeros(tc_end - tc_st)
 #rel_rot_global = np.zeros(tc_end - tc_st)
 
-ts_st = 1
+ts_st = 0
 mp = np.zeros(n - ts_st)
 rmp = np.zeros(n - ts_st)
 ana = np.zeros(n - ts_st)
@@ -145,22 +145,20 @@ ana = np.zeros(n - ts_st)
 #rel_mp_global = np.zeros(coef_st - coef_end)
 #rel_rot_global = np.zeros(coef_st - coef_end)
 
-for ts in range(1, n):
-#for tc_len in range(tc_st, tc_end):
-#for coef_tr in range(coef_st, coef_end, -1):
+for ts in range(n):
     #trunc_param = np.array([tc_len, 1e-6])
     U = []
     AppendH(U, h, h_ind, dt, trott_order, nf2)
     AppendV(U, V, v_ind, dt, trott_order, nf2)
 
-    for i in range(ts-1):
+    for i in range(ts):
         AppendH(U, h, h_ind, 2 * dt, trott_order, nf2)
         AppendV(U, V, v_ind, dt, trott_order, nf2)
 
     AppendH(U, h, h_ind, dt, trott_order, nf2)
     print("gate count", len(U))
 
-    trunc_param = np.array([8, 1e-6])
+    trunc_param = np.array([8, 1e-10])
     #trunc_param = np.array([4, 10**(coef_tr)])
 
     
@@ -177,7 +175,7 @@ for ts in range(1, n):
 
     # Rotated Majorana Propogation
     #tic = time.perf_counter()
-    Node_out = twofourMajStrEvo(nf, h, V, ts, dt, Init_Node, trunc_param, trott_order)
+    Node_out = twofourMajStrEvo(nf, h, V, ts+1 , dt, Init_Node, trunc_param, trott_order)
     #toc = time.perf_counter()
     #print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
@@ -208,7 +206,7 @@ for ts in range(1, n):
         rexp[i] = Rotated_ExpectVal(Node_out, h, dt, ts, rho_st, nf)
         #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
-        dexp[i] = DirectExp(init_len, init_maj, V, h, ts * dt, i, nf, nf2)
+        dexp[i] = DirectExp(init_len, init_maj, V, h, (ts+1) * dt, i, nf, nf2)
         
 
 
@@ -238,7 +236,7 @@ filename =  dir_ + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init
 
 
 
-x = np.arange(1, n)
+x = np.arange(0, n)
 comp1 = mp
 comp2 = rmp
 comp3 = ana 
