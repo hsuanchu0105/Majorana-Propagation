@@ -32,14 +32,14 @@ def log(*args, **kwargs):
 
 
 
-nz_seed = 1923132 # seed for non-zero terms 
-cf_seed = 395238 # seed for coefficients
+nz_seed = 1922132 # seed for non-zero terms 
+cf_seed = 913395238 # seed for coefficients
 
 
 nmin_h=1
-nmax_h=20
+nmax_h=30
 nmin_v=1
-nmax_v=20
+nmax_v=30
 
 #sps = sparsity(h_ind, v_ind, nf2)
 #print("Delta = ", sps)
@@ -110,7 +110,7 @@ for cs in range(cn):
 
         AppendV(U, V, v_ind, dt, trott, nf2)
 
-        for i in range(n-1):
+        for i in range(n):
             AppendH(U, h, h_ind, 2 * dt, trott, nf2)
             AppendV(U, V, v_ind, dt, trott, nf2)
 
@@ -160,10 +160,10 @@ for cs in range(cn):
             obexp[i] = ExpectVal(Output_Node, len(Output_Node) , rho_st)
             #print("Expectation value by Majorana Propagation = ", obexp[i])
 
-            rexp[i] = Rotated_ExpectVal(Node_out , h, dt, n, rho_st, nf)
+            rexp[i] = Rotated_ExpectVal(Node_out , h, dt, n + 1, rho_st, nf)
             #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
-            dexp[i] = DirectExp(init_len, init_maj, V, h, n * dt, i, nf, nf2)
+            dexp[i] = DirectExp(init_len, init_maj, V, h, (n+1) * dt, i, nf, nf2)
         
 
 

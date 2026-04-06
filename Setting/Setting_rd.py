@@ -8,7 +8,7 @@ dt = 0.01
 n = 10 #num of timestep
 
 #number of fermionic mode 
-nf = 4
+nf = 10
 nf2 = 2 * nf
 
 trott = 1 # trotterization order 
@@ -17,7 +17,7 @@ len_trunc = 8
 coeff_trunc = 1e-6
 
 hist_save = False
-seed_init = 93931132
+seed_init = 93915132
 
 rng = np.random.default_rng(seed_init)
 init_len = 10 # terms in intial observable

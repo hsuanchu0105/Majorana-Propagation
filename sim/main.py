@@ -11,7 +11,7 @@ import time
 
 
 dt = 0.01
-n = 1 #num of timestep
+n = 10 #num of timestep
 
 #number of fermionic mode 
 nf = 6
@@ -158,7 +158,7 @@ for ts in range(n):
     AppendH(U, h, h_ind, dt, trott_order, nf2)
     print("gate count", len(U))
 
-    trunc_param = np.array([8, 1e-10])
+    trunc_param = np.array([8, 1e-6])
     #trunc_param = np.array([4, 10**(coef_tr)])
 
     
@@ -203,7 +203,7 @@ for ts in range(n):
         obexp[i] = ExpectVal(Output_Node, len(Output_Node), rho_st)
         #print("Expectation value by Majorana Propagation = ", obexp[i])
 
-        rexp[i] = Rotated_ExpectVal(Node_out, h, dt, ts, rho_st, nf)
+        rexp[i] = Rotated_ExpectVal(Node_out, h, dt, ts + 1, rho_st, nf)
         #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
         dexp[i] = DirectExp(init_len, init_maj, V, h, (ts+1) * dt, i, nf, nf2)
@@ -236,7 +236,7 @@ filename =  dir_ + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init
 
 
 
-x = np.arange(0, n)
+x = np.arange(1, n+1)
 comp1 = mp
 comp2 = rmp
 comp3 = ana 

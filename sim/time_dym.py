@@ -11,3 +11,12 @@ from pathlib import Path
 
 
 
+t_st = 0
+dt = 0.1
+ts = 10
+t_end = t_st + dt * ts
+
+mp = np.zeros(ts)
+rmp = np.zeros(ts)
+ana = np.zeros(ts)
+

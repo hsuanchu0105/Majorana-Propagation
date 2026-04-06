@@ -1,13 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from datetime import date
+import os
 
 cn = 5
 
 mp_color = "tab:blue"
 rmp_color = "tab:orange"
 
-d = np.load("analysis/ta0319/93931132_1923132_395238_errors.npz")
+d = np.load("analysis/ta0320/93915132_1922132_913395238_errors.npz")
 err = d["err"]
 err_rot = d["err_rot"]
 
@@ -94,5 +96,10 @@ handles = [
 ax.legend(handles=handles, loc="upper right")
 
 plt.tight_layout()
+dir_ = f"analysis/plot{date.today():%m%d}/"
+note = "_vp"
+filename =  dir_  +  note  + ".png"
+os.makedirs(os.path.dirname(filename), exist_ok=True)
+plt.savefig(filename, dpi=200, bbox_inches="tight")
 plt.show()
 
