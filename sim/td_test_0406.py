@@ -1,5 +1,3 @@
-from MajProp import * 
-from Setting_td import *
 from src.MajProp import * 
 from Setting.Setting_td import *
 from src.Gate import *
@@ -10,6 +8,8 @@ import time
 from datetime import date
 from datetime import datetime 
 from pathlib import Path
+import matplotlib.pyplot as plt
+import os
 
 
 
@@ -32,18 +32,20 @@ mp_trott = np.zeros(n - ts_st)
 trunc_param = np.array([len_trunc, coeff_trunc])
 U = []
 
-AppendH(U, h_ind, dt, trott, nf2)
-
-AppendV(U, v_ind, dt, trott, nf2)
-
-
+AppendH(U, h, h_ind, dt, trott, nf2)
+AppendV(U, V, v_ind, dt, trott, nf2)
 Temp_Node = MajoranaPropagation(trunc_param, Init_Node, len(U), U)
+
+# Rotated Majorana Propogation
+V_upd, U_rmp = BasisChange(nf, h, V, dt, trott, trunc_param, True)
+RMP_temp = MajoranaPropagation(trunc_param, Init_Node, len(U_rmp), U_rmp, False, "timestep" + str(i))
 
 for ts in range(ts_st, n):
     
+    U1 = []
     if(ts > 1):
-        AppendH(U, h_ind, 2 * dt, trott, nf2)
-        AppendV(U, v_ind, dt, trott, nf2)
+        AppendH(U1, h, h_ind, 2 * dt, trott, nf2)
+        AppendV(U1, V, v_ind, dt, trott, nf2)
 
         
     print("gate count", len(U))
@@ -53,20 +55,21 @@ for ts in range(ts_st, n):
     c = np.zeros(nf, dtype = int)
 
     tic = time.perf_counter()
-    Temp_Node = MajoranaPropagation(trunc_param, Temp_Node, len(U), U)
+    Temp_Node = MajoranaPropagation(trunc_param, Temp_Node, len(U1), U1)
     toc = time.perf_counter()
     print(f"Majorana Propagation : {toc - tic:0.4f} seconds")
 
+    U2 = []
+    AppendH(U2, h, h_ind, dt, trott, nf2)
+    MP_OT_Node = MajoranaPropagation(trunc_param, Temp_Node, len(U2), U2)
 
-    AppendH(U, h_ind, dt, trott, nf2)
-    MP_OT_Node = MajoranaPropagation(trunc_param, Temp_Node, len(U), U)
 
-    # Rotated Majorana Propogation
-    tic = time.perf_counter()
-    ### number of timesteps warning
-    Node_out = twofourMajStrEvo(nf, h, V, ts, dt, Init_Node, trunc_param, trott, rmp_hist)
-    toc = time.perf_counter()
-    print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
+    if(ts > 1):
+        print("middle layer", ts)
+        tic = time.perf_counter()
+        RMP_temp = twofourMajStrEvo(nf, h, V_upd, dt, RMP_temp, trunc_param, trott, 1, rmp_hist)
+        toc = time.perf_counter()
+        print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
     #for node in Output_Node:
         #print(sum(node.b))
@@ -93,7 +96,7 @@ for ts in range(ts_st, n):
         obexp[i] = ExpectVal(MP_OT_Node, len(MP_OT_Node) , rho_st)
         #print("Expectation value by Majorana Propagation = ", obexp[i])
 
-        rexp[i] = Rotated_ExpectVal(Node_out , h, dt, ts, rho_st, nf)
+        rexp[i] = Rotated_ExpectVal(RMP_temp, h, dt, ts, rho_st, nf)
         #print("Expectation value by Rotated Majorana Propagation = ", rexp[i])
 
         dexp[i] = DirectExp(init_len, init_maj, V, h, ts * dt, i, nf, nf2)
@@ -104,18 +107,18 @@ for ts in range(ts_st, n):
     #Trotterization(trottexp, init_len, init_maj, U, nf)
 
     # 2-norm 
-    mp[ts - ts_st] = np.linalg.norm(obexp)
-    rmp[ts - ts_st] = np.linalg.norm(rexp)
-    ana[ts - ts_st] = np.linalg.norm(dexp)
-    #rel_mp[ts - ts_st] = np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
-    #rel_rmp[ts - ts_st] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
+    #mp[ts - ts_st] = np.linalg.norm(obexp)
+    #rmp[ts - ts_st] = np.linalg.norm(rexp)
+    #ana[ts - ts_st] = np.linalg.norm(dexp)
+    rel_mp[ts - ts_st] = np.linalg.norm(obexp - dexp)/np.linalg.norm(dexp)
+    rel_rmp[ts - ts_st] = np.linalg.norm(rexp - dexp)/np.linalg.norm(dexp)
     #mp_trott[ts - ts_st] = np.linalg.norm(obexp - trottexp)
     
     ErrorPrint(dexp, obexp, rexp, 2)
 
 #'''
 # save .csv file for later use 
-dir_ = f"ta{date.today():%m%d}/"
+dir_ = f"analysis/ta{date.today():%m%d}/"
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 # fermionic mode + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + len_trunc + coeff_trunc + trotter order + note(optional)
 prefix = dir_ + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + "_" + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(trott) 
@@ -125,7 +128,7 @@ path = Path(fname)
 path.parent.mkdir(parents=True, exist_ok=True)
 #np.savetxt(path, mp_trott, delimiter=",")
 #'''
-dir_ = f"plot{date.today():%m%d}/"
+dir_ = f"analysis/plot{date.today():%m%d}/"
 prefix = dir_ + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + "_" + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(trott) 
 pltname =  prefix + ".png"
 
@@ -152,6 +155,74 @@ plt.tight_layout()
 
 
 os.makedirs(os.path.dirname(pltname), exist_ok=True)
-#plt.savefig(pltname, dpi=200, bbox_inches="tight")
+plt.savefig(pltname, dpi=200, bbox_inches="tight")
 plt.show()
 
+'''
+# save .csv file for later use 
+dir_ = f"ta{date.today():%m%d}/"
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+# fermionic mode + dt + n + init_maj_len + nonzero_term_h + nonzero+term_v + len_trunc + coeff_trunc + trotter order + note(optional)
+prefix = dir_ + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + "_" + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(trott) 
+
+fname =  prefix + ".csv"
+path = Path(fname)   
+path.parent.mkdir(parents=True, exist_ok=True)
+#np.savetxt(path, mp_trott, delimiter=",")
+
+dir_ = f"plot{date.today():%m%d}/"
+prefix = dir_ + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + "_" + str(len_trunc) + "_" + str(coeff_trunc) + "_" + str(trott) 
+pltname =  prefix + ".png"
+
+
+
+ts_len = np.arange(ts_st, n)  
+plt.figure()
+plt.plot(ts_len, rel_mp , marker='o', linestyle='-', label='MP')
+plt.plot(ts_len, rel_rmp , marker='o', linestyle='-', label='RMP')
+#plt.plot(ts_len, mp_trott , marker='o', linestyle='-')
+
+
+
+#plt.xlabel('truncation length')
+plt.xlabel('timestep')
+#plt.ylabel('relative error (global)')
+#plt.ylabel(r'$\left\|O(t)\right\|_{2}$')
+plt.ylabel(r'$\left\|Tr(\rho O^{\ell}_{\mathrm{MP}}) - Tr(\rho O_{\mathrm{trott}})\right\|_{2}$')
+plt.yscale('log')  
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.title("Comparison between Majorana Propagation and Trotterization")
+plt.tight_layout()
+
+
+os.makedirs(os.path.dirname(pltname), exist_ok=True)
+plt.savefig(pltname, dpi=200, bbox_inches="tight")
+plt.show()
+'''
+'''
+
+trunc_met = "lt"
+dir = "plot0216/"
+note = "_td4"
+filename =  dir + trunc_met + "_" + str(nf) + "_" + str(dt) + "_" + str(n) + "_" + str(init_len)+ "_" + str(np.count_nonzero(h)) + "_" + str(np.count_nonzero(V)) + note  + ".png"
+
+ts_len = np.arange(ts_st, n)
+plt.figure()
+plt.plot(ts_len, mp , marker='o', linestyle='-', label='MP')
+plt.plot(ts_len, rmp , marker='o', linestyle='-', label='RMP')
+plt.plot(ts_len, ana , marker='o', linestyle='-', label='ANA')
+#plt.xlabel('truncation length')
+plt.xlabel('timestep')
+#plt.ylabel('relative error (global)')
+plt.ylabel(r'$\left\|O(t)\right\|_{2}$')
+plt.yscale('log')  
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.tight_layout()
+
+
+os.makedirs(os.path.dirname(filename), exist_ok=True)
+plt.savefig(filename, dpi=200, bbox_inches="tight")
+plt.show()
+'''

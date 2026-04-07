@@ -116,7 +116,7 @@ def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
     
     return V4, U
 
-def twofourMajStrEvo(N, h, V, sn, dt, Init_Node, trunc_param, trott_order, histsave = False):
+def twofourMajStrEvo(N, h, V, dt, Init_Node, trunc_param, trott_order, sn = 1, histsave = False):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
@@ -129,10 +129,8 @@ def twofourMajStrEvo(N, h, V, sn, dt, Init_Node, trunc_param, trott_order, hists
 
     bdry = False
     for i in range(sn):
-        if(i==0):
-            bdry = True
-        
-        V, U = BasisChange(N, h, V, dt, trott_order, trunc_param, bdry) #coefficient in new basis
+        #contraction
+        V, U = BasisChange(N, h, V, dt, trott_order, trunc_param, bdry) 
         #print(f"gate count at step {i}: {len(U)}")
         Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, histsave, "timestep" + str(i))
         #print(len(Node_next))
