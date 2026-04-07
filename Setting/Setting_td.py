@@ -8,7 +8,7 @@ dt = 0.01
 n = 11 #num of timestep
 
 #number of fermionic mode 
-nf = 4
+nf = 6
 nf2 = 2 * nf
 
 trott = 2 # trotterization order 
@@ -16,7 +16,7 @@ len_trunc = 8
 coeff_trunc = 1e-8
 
 rmp_hist = True # save the length distribution histogram in RMP
-random_init = False
+random_init = True
 
 h = np.zeros((nf2, nf2))
 V = np.zeros((nf2, nf2, nf2, nf2))

@@ -47,27 +47,27 @@ for ts in range(ts_st, n):
         AppendH(U1, h, h_ind, 2 * dt, trott, nf2)
         AppendV(U1, V, v_ind, dt, trott, nf2)
 
+        tic = time.perf_counter()
+        Temp_Node = MajoranaPropagation(trunc_param, Temp_Node, len(U1), U1)
+        toc = time.perf_counter()
+        print(f"Majorana Propagation : {toc - tic:0.4f} seconds")
+
         
-    print("gate count", len(U))
+    #print("gate count", len(U))
     #print("Fermionic gate:", U)
     #print('\t')
-    rho_st = np.zeros(nf, dtype = int)
-    c = np.zeros(nf, dtype = int)
-
-    tic = time.perf_counter()
-    Temp_Node = MajoranaPropagation(trunc_param, Temp_Node, len(U1), U1)
-    toc = time.perf_counter()
-    print(f"Majorana Propagation : {toc - tic:0.4f} seconds")
 
     U2 = []
     AppendH(U2, h, h_ind, dt, trott, nf2)
     MP_OT_Node = MajoranaPropagation(trunc_param, Temp_Node, len(U2), U2)
 
-
+    
     if(ts > 1):
-        print("middle layer", ts)
+        print("add middle layer, current time step = ", ts)
         tic = time.perf_counter()
-        RMP_temp = twofourMajStrEvo(nf, h, V_upd, dt, RMP_temp, trunc_param, trott, 1, rmp_hist)
+        #RMP_temp = twofourMajStrEvo(nf, h, V_upd, dt, RMP_temp, trunc_param, trott, 1, rmp_hist)
+        V_upd, U_ml = BasisChange(nf, h, V_upd, dt, trott, trunc_param, False)
+        RMP_temp = MajoranaPropagation(trunc_param, RMP_temp, len(U_ml), U_ml, False, "timestep" + str(i))
         toc = time.perf_counter()
         print(f"Rotated Evolution : {toc - tic:0.4f} seconds")
 
@@ -75,6 +75,8 @@ for ts in range(ts_st, n):
         #print(sum(node.b))
     #    pass
 
+    rho_st = np.zeros(nf, dtype = int)
+    c = np.zeros(nf, dtype = int)
 
     obexp = np.zeros(2**nf, dtype = complex)
     rexp = np.zeros(2**nf, dtype = complex)
@@ -144,13 +146,13 @@ plt.plot(ts_len, rel_rmp , marker='o', linestyle='-', label='RMP')
 
 #plt.xlabel('truncation length')
 plt.xlabel('timestep')
-#plt.ylabel('relative error (global)')
+plt.ylabel('relative error (global)')
 #plt.ylabel(r'$\left\|O(t)\right\|_{2}$')
-plt.ylabel(r'$\left\|Tr(\rho O^{\ell}_{\mathrm{MP}}) - Tr(\rho O_{\mathrm{trott}})\right\|_{2}$')
+#plt.ylabel(r'$\left\|Tr(\rho O^{\ell}_{\mathrm{MP}}) - Tr(\rho O_{\mathrm{trott}})\right\|_{2}$')
 plt.yscale('log')  
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
-plt.title("Comparison between Majorana Propagation and Trotterization")
+plt.title("Comparison between MP and RMP")
 plt.tight_layout()
 
 
