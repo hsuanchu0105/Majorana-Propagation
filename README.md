@@ -1,4 +1,4 @@
-Majorana Propagation
+# Majorana Propagation
 
 This repository contains Python code developed for simulating fermionic dynamics using Majorana Propagation (MP) and a modified Rotated Majorana Propagation (RMP) approach.
 
