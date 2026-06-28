@@ -1,3 +1,0 @@
-seed for initial terms =  393164 	
-seed for non-zero terms =  716732 	
-seed for coefficients =   126338 	
