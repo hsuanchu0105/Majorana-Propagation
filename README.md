@@ -18,3 +18,16 @@ Majorana-Propagation/
 ├── test/              # Validation and comparison scripts
 └── Setting/           # Project settings or parameter files
 ```
+
+## Installation
+
+Clone the repository:
+```text
+git clone git@github.com:hsuanchu0105/Majorana-Propagation.git
+cd Majorana-Propagation
+```
+
+Install the main dependencies:
+```text
+pip install numpy scipy matplotlib tqdm pytest
+```
