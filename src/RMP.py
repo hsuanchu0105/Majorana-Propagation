@@ -116,11 +116,11 @@ def BasisChange(N, h, V, dt, trott_order, trunc_param, bdry):
     
     return V4, U
 
-def twofourMajStrEvo(N, h, V, dt, Init_Node, trunc_param, trott_order, sn = 1, histsave = False):
+def twofourMajStrEvo(N, h, V, n, dt, Init_Node, trunc_param, trott_order, histsave = False):
 	# N: number of Fermionic mode
 	# h: free-fermion Hamiltonian coefficient (2N * 2N matrix)
     # V: 4-leg tensor 
-    # sn: number of timesteps
+    # n: number of timesteps
     # dt: evolution time each timestep 
 	# Initial Node: 
 	# output: coefficient of majorana operator after evolution
@@ -128,14 +128,17 @@ def twofourMajStrEvo(N, h, V, dt, Init_Node, trunc_param, trott_order, sn = 1, h
     Node_next = Init_Node
 
     bdry = False
-    for i in range(sn):
-        #contraction
-        V, U = BasisChange(N, h, V, dt, trott_order, trunc_param, bdry) 
-        #print(f"gate count at step {i}: {len(U)}")
+    for i in range(n):
+        if(i==0):
+            bdry = True
+        else:
+            bdry = False
+        V, U = BasisChange(N, h, V, dt, trott_order, trunc_param, bdry) #coefficient in new basis
         Node_next = MajoranaPropagation(trunc_param, Node_next, len(U), U, histsave, "timestep" + str(i))
         #print(len(Node_next))
 
     return Node_next
+
 
 def Rotated_ExpectVal(NodeList, h, dt, tstep_num, rho, nf):
     
