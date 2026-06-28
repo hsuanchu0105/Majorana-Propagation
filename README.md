@@ -4,8 +4,8 @@ This repository contains Python code developed for simulating fermionic dynamics
 
 The project represents Majorana operators using binary vectors and propagates operator expansions under sequences of fermionic gates. It also includes tools for constructing Majorana operators, generating sparse fermionic Hamiltonians, comparing with direct matrix exponentiation for small systems, and analyzing truncation errors.
 
-# Repository structure
-
+## Repository structure
+```text
 Majorana-Propagation/
 ├── src/
 │   ├── Op.py          # Majorana operators, Node class, matrix conversion
@@ -17,3 +17,4 @@ Majorana-Propagation/
 │   └── Plot.py        # Plotting utilities
 ├── test/              # Validation and comparison scripts
 └── Setting/           # Project settings or parameter files
+```
