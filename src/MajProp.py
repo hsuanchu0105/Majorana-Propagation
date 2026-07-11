@@ -8,32 +8,26 @@ from tqdm import tqdm
 from .Op import *
 
 
-def b_to_key(b) -> tuple:
-    """Binary numpy array/list -> hashable key."""
-    return tuple(np.asarray(b, dtype=np.uint8).tolist())
+def b_to_int(b) -> int:
+    """Binary numpy array/list -> bitmask int (bit i = b[i]). Hashable, O(1) popcount/AND."""
+    x = 0
+    for i, v in enumerate(b):
+        if v:
+            x |= (1 << i)
+    return x
 
-def key_to_b(key) -> np.ndarray:
-    """Key tuple -> numpy array."""
-    return np.fromiter(key, dtype=np.uint8)
+def int_to_b(x, n) -> np.ndarray:
+    """Bitmask int -> binary numpy array of length n."""
+    return np.array([(x >> i) & 1 for i in range(n)], dtype=np.uint8)
 
-def commute_check(b_term, b_gate) -> bool:
-    b_term = np.asarray(b_term, dtype=np.uint8)
-    b_gate = np.asarray(b_gate, dtype=np.uint8)
-
-    if b_term.shape[0] < b_gate.shape[0]:
-        long_arr, short_arr = b_gate, b_term
-    else:
-        long_arr, short_arr = b_term, b_gate
-
-    short_padded = np.zeros_like(long_arr)
-    short_padded[:short_arr.shape[0]] = short_arr
-
-    return ((int(short_padded.sum()) * int(long_arr.sum()) - int(np.inner(short_padded, long_arr))) % 2) == 0
+def gate_rb(weight) -> int:
+    """Same as MajoranaOp(...).rb() but taking a precomputed Hamming weight."""
+    return 0 if (weight % 4) in (0, 1) else 1
 
 def histogram_from_state(state, nf2):
     hist = np.zeros(nf2, dtype=int)
     for key in state.keys():
-        j = sum(key)
+        j = key.bit_count()
         if 1 <= j <= nf2:
             hist[j - 1] += 1
     return hist
@@ -55,47 +49,14 @@ def perm_parity(k, l, m, n):
 
 
 """
-Majorana Propagation for 1 Fermionic gate
-"""
-def M1Prg(Nin, theta_ex, b_ex):
-    neg_cnt = 0                                 #negative sign from anti-commutivity 
-    cons_len = min(len(b_ex), len(Nin.b))       #considered length
-    
-    #sign added by multiplication of two Majorana operators (nodes)
-    for i in range(cons_len):
-        if(Nin.b[i]==1):
-            shade = [0] * (i + 1) + [1] * (len(b_ex) - i - 1)
-            neg_cnt += np.inner(b_ex, shade)
-    
-    sign = 1
-    if(neg_cnt % 2 == 1):
-        sign = -1
+Main function of Majorana Propagation
 
-    # put two binaries into same length 
-    if(len(b_ex) < len(Nin.b)):
-        long_arr = Nin.b
-        short_arr = b_ex
-    else:
-        long_arr = b_ex
-        short_arr = Nin.b
-
-    short_padded = np.zeros_like(long_arr)
-    short_padded[:short_arr.shape[0]] = short_arr
-
-    
-    bsum = short_padded + long_arr
-    bout = np.array([x % 2 for x in bsum])
-
-    imag = MajoranaOp(len(b_ex), b_ex).rb() + 1
-
-    c1 = Nin.c * cmath.cos(theta_ex)
-    c2 = Nin.c * cmath.sin(theta_ex) *  (1j ** imag) * sign 
-    #print(imag, sign, c2)
-
-    return c1,  c2 , bout 
-
-"""
-Main function of Majorana Propagation 
+State terms and gates are represented as Python-int bitmasks (bit i <-> b[i])
+rather than numpy arrays/tuples. This lets commutation, sign, and XOR-update
+be computed with O(1) int ops (a.bit_count(), a & gate_b, a ^ gate_b) instead
+of allocating small numpy arrays per (state term, gate) pair, and quantities
+that only depend on the gate (cos/sin of theta, the (1j**imag) phase, the
+list of set-bit positions) are hoisted out of the per-term loop.
 """
 def MajoranaPropagation(trunc, Nin, lenU, U, save_hist=False, filesuffix="", stride=10):
     length_trunc = trunc[0]
@@ -104,49 +65,55 @@ def MajoranaPropagation(trunc, Nin, lenU, U, save_hist=False, filesuffix="", str
     nf2 = len(Nin[0].b)
     L = lenU
 
-    # state: key(tuple(b)) -> coefficient
+    # state: bitmask int -> coefficient
     state = defaultdict(complex)
     for node in Nin:
-        state[b_to_key(node.b)] += node.c
+        state[b_to_int(node.b)] += node.c
 
-    sampled_levels = [0]
-   
-
-    #for i in range(L):
     for i in tqdm(range(L), total=L, desc="Running"):
-        gate_coeff = U[i][0]
-        gate_b = np.asarray(U[i][1], dtype=np.uint8)
+        theta = U[i][0]
+        gate_b = b_to_int(U[i][1])
+        gate_weight = gate_b.bit_count()
+
+        # gate-dependent constants, computed once per gate rather than per term
+        cos_theta = cmath.cos(theta)
+        sin_i = cmath.sin(theta) * (1j ** (gate_rb(gate_weight) + 1))
+        bit_positions = [j for j in range(nf2) if (gate_b >> j) & 1]
 
         new_state = defaultdict(complex)
 
-        for key, coeff in state.items(): # returns a view object containing tuples of key and value pairs from state
+        for a, coeff in state.items():
             if coeff_thres and abs(coeff) < coeff_thres:
                 continue # skip current iteration of for loop
 
-            b = key_to_b(key)
+            a_weight = a.bit_count()
+            overlap = (a & gate_b).bit_count()
 
-            if commute_check(b, gate_b):
+            if ((a_weight * gate_weight - overlap) % 2) == 0:
                 # no branching, keep same binary
-                new_state[key] += coeff
+                new_state[a] += coeff
             else:
-                # branching
-                node = Node(b, coeff)
-                coeff1, coeff2, bnew = M1Prg(node, gate_coeff, gate_b)
+                # branching: left branch always stays on same binary
+                new_state[a] += coeff * cos_theta
 
-                # left branch always stays on same binary
-                new_state[key] += coeff1
+                # sign from anti-commuting the gate's Majorana factors past
+                # the ones already set in `a` (parity of inversions between
+                # bits of a and bits of gate_b)
+                parity = 0
+                for j in bit_positions:
+                    parity ^= (a & ((1 << j) - 1)).bit_count() & 1
+                sign = -1 if parity else 1
 
                 # right branch: apply truncations
-                bnew = np.asarray(bnew, dtype=np.uint8)
-                if int(bnew.sum()) <= length_trunc and (not coeff_thres or abs(coeff2) >= coeff_thres):
-                    new_state[b_to_key(bnew)] += coeff2
+                bnew = a ^ gate_b
+                coeff2 = coeff * sin_i * sign
+                if bnew.bit_count() <= length_trunc and (not coeff_thres or abs(coeff2) >= coeff_thres):
+                    new_state[bnew] += coeff2
 
         state = new_state
 
-    
-
     # convert dict back to list of Nodes
-    Nout = [Node(np.array(k, dtype=np.uint8), c) for k, c in state.items()]
+    Nout = [Node(int_to_b(k, nf2), c) for k, c in state.items()]
     return Nout
 
 

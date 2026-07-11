@@ -24,7 +24,7 @@ V = np.zeros((nf2, nf2, nf2, nf2))
 
 
 if(random_init):
-    seed_init = 939151
+    seed_init = 23939151
 
     rng = np.random.default_rng(seed_init)
     init_len = 10 # terms in intial observable

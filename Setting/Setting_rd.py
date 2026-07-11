@@ -2,13 +2,13 @@ import numpy as np
 from src.MajProp import *
 import itertools
 
-cn = 5 # number of cases 
+cn = 3 # number of cases 
 sn = 10 # sample numbers per (alpha_h, alpha_v)
 dt = 0.01
 n = 10 #num of timestep
 
 #number of fermionic mode 
-nf = 10
+nf = 8
 nf2 = 2 * nf
 
 trott = 1 # trotterization order 
